@@ -3,11 +3,17 @@ const greeter = (person: string) => {
 }
 
 function testGreeter() {
-    const user = 'Grant';
+    const user = 'Brittany';
     Logger.log(greeter(user));
     return greeter(user);
 }
 
-function test() {
+// @ts-ignore
+global.doGet = (e) => {
+    return HtmlService.createHtmlOutputFromFile('dist/index.html');
+}
+
+// @ts-ignore
+global.appScriptTest = () => {
     return testGreeter()
 }

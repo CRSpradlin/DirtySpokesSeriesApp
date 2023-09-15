@@ -1,10 +1,12 @@
 # ignore all files…
 **/**
 
-# except the extensions…
 !appsscript.json
-# and our transpiled code
-!build/*.js
+
+# don't ignore transpiled code
+!dist/**.*
+
+dist/main.js
 
 # ignore even valid files if in…
 .git/**
