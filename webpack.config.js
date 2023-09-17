@@ -98,7 +98,8 @@ const clientConfig = Object.assign({}, sharedConfigSettings, {
 				test: /\.css$/,
 				use: [
 					"style-loader",
-					"css-loader"
+					"css-loader",
+					"postcss-loader"
 				]
 			}, {
 				test: /\.scss?$/,
@@ -117,7 +118,7 @@ const clientConfig = Object.assign({}, sharedConfigSettings, {
 	},
 	plugins: [
 		htmlPlugin,
-        new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
+        new HtmlWebpackInlineSourcePlugin(),
 		new TSLintPlugin({
 			files: ["./src/**/*.ts"]
 		})

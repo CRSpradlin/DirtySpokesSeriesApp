@@ -23,7 +23,7 @@ export default class FormInput extends React.Component {
 	public render() {
 		return (
 			<div className="formBlock">
-				<span>Add a sheet: </span>
+				<span className="text-red-500">Add a sheet: </span>
 				<form onSubmit={this.handleSubmit}>
 					<input />
 				</form>
