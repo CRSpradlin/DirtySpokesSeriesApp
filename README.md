@@ -8,7 +8,9 @@ The prep and setup for this project will be done in phases. In an attempt to kee
 [Documentation for Setting Up Local AppScript Development](https://developers.google.com/apps-script/guides/clasp)
 [Advanced Clasp Docs](https://github.com/google/clasp/blob/master/docs/README.md)
  - Setup GCP in order to hook into running functions locally
- - Add in bundler to build all `*.ts` files properly 
+ - Add in bundler to build all `*.ts` files properly
+
+ Application deployment heavily influenced by [enuchi/React-Google-Apps-Script](https://github.com/enuchi/React-Google-Apps-Script)
 
 ### Phase II:
 [Example of Google AppScript with Web Form to Upload Files to Folder](https://www.bpwebs.com/upload-files-to-google-drive-with-google-apps-script/)
