@@ -1,7 +1,7 @@
 {
   "scripts": {
     "open": "clasp open",
-    "test": "clasp run appScriptTest",
+    "test": "clasp run test",
     "update": "clasp pull",
     "build": "webpack --mode production",
     "deploy": "bun run build; clasp push"
