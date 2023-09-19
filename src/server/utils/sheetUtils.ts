@@ -33,4 +33,21 @@ const convertToGoogleSheet = (documentId: string) => {
     return resultFile.driveId;
 }
 
-export { convertToGoogleSheet };
+const packageSeriesGroups = (documentId: string) => {
+    const uploadedSheet = SpreadsheetApp.openById(documentId).getActiveSheet();
+
+    const rangeData = uploadedSheet.getRange(1, 1, uploadedSheet.getMaxRows(), 7).getValues();
+
+    for (let i=6; i<rangeData.length; i++) {
+        const row = rangeData[i];
+        const firstColOnRow = row[0];
+        
+        if (firstColOnRow !== '' && firstColOnRow !== 'Place' && isNaN(firstColOnRow) && !firstColOnRow.toLowerCase().includes('win')) {
+            Logger.log(firstColOnRow);
+        }
+    }
+
+    return rangeData;
+}
+
+export { convertToGoogleSheet, packageSeriesGroups };
