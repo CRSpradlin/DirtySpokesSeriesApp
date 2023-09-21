@@ -1,6 +1,13 @@
 const getMainSheetId = () => {
     const props = PropertiesService.getScriptProperties();
-    return props.getProperty('MAIN_SHEET_ID');
+
+    const id = props.getProperty('MAIN_SHEET_ID');
+
+    if (id) {
+        return id;
+    } else {
+        throw new Error('Could not find Main Sheet Id. Be sure it is saved in the script properties.');
+    }
 };
 
 const getTempFolderId = () => {
@@ -11,7 +18,7 @@ const getTempFolderId = () => {
     } else {
         throw new Error('No Temp Folder Found');
     }
-}
+};
 
 const convertToGoogleSheet = (documentId: string) => {
     const file = DriveApp.getFileById(documentId);
@@ -31,23 +38,50 @@ const convertToGoogleSheet = (documentId: string) => {
     }
 
     return resultFile.driveId;
-}
+};
 
 const packageSeriesGroups = (documentId: string) => {
     const uploadedSheet = SpreadsheetApp.openById(documentId).getActiveSheet();
 
     const rangeData = uploadedSheet.getRange(1, 1, uploadedSheet.getMaxRows(), 7).getValues();
 
+    const packagedResults = {
+        raceName: rangeData[1][0],
+        seriesResults: {}
+    };
+
+
     for (let i=6; i<rangeData.length; i++) {
-        const row = rangeData[i];
-        const firstColOnRow = row[0];
+        let row = rangeData[i];
+        let firstColOnRow = row[0];
         
         if (firstColOnRow !== '' && firstColOnRow !== 'Place' && isNaN(firstColOnRow) && !firstColOnRow.toLowerCase().includes('win')) {
-            Logger.log(firstColOnRow);
+            packagedResults.seriesResults[firstColOnRow] = [];
+            i += 3;
+            row = rangeData[i];
+            while (row[0] !== '') {
+                if(i >= rangeData.length) break;
+                
+                packagedResults.seriesResults[firstColOnRow].push(row);
+
+                i++;
+                row = rangeData[i];
+            }
         }
     }
 
-    return rangeData;
-}
+    return packagedResults;
+};
 
-export { convertToGoogleSheet, packageSeriesGroups };
+const processSeriesGroupsTabs = (packagedResults) => {
+    const mainSheet = SpreadsheetApp.openById(getMainSheetId());
+
+    const sheetNames = mainSheet.getSheets().map(s => s.getName());
+    
+    for (const seriesGroup of Object.keys(packagedResults.seriesResults)) {
+        if (!sheetNames.includes(seriesGroup)) {
+            const newSheet = mainSheet.insertSheet(seriesGroup);
+            newSheet.getRange(1, 1, 1, 12).setValues([['Runner','Id','Points Awarded','Race','Place','Name','City','Age','Overall','Total','Time','Pace']]);
+        }
+    }
+};
