@@ -1,7 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import FormInput from "./components/form";
 import './styles.css';
 
+import Root from "./components/root";
 
-ReactDOM.render(<FormInput />, document.getElementById("root"));
+
+ReactDOM.render(<Root />, document.getElementById("root"));
