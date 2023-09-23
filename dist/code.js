@@ -82,59 +82,74 @@ function test() {}
     __webpack_require__.g.doGet = function(e) {
         return HtmlService.createHtmlOutputFromFile("dist/index.html").setSandboxMode(HtmlService.SandboxMode.IFRAME).addMetaTag("viewport", "width=device-width, initial-scale=1").setTitle("DirtySpokesSeriesApp");
     }, __webpack_require__.g.uploadHandler = function(formObject) {
-        var xcelFileId = function(formObject) {
-            var tempFolderId = getTempFolderId(), tempFolder = DriveApp.getFolderById(tempFolderId);
-            if (formObject.excelFile.length > 0) {
-                var blob = formObject.excelFile;
-                return tempFolder.createFile(blob).getId();
-            }
-            throw new Error("File selected contains no content.");
-        }(formObject), packagedResults = function(documentId) {
-            for (var uploadedSheet = SpreadsheetApp.openById(documentId), uploadedSheetRange = uploadedSheet.getActiveSheet(), rangeData = uploadedSheetRange.getRange(1, 1, uploadedSheetRange.getMaxRows(), 7).getValues(), packagedResults = {
-                fileName: uploadedSheet.getName(),
-                raceName: rangeData[1][0],
-                seriesResults: {}
-            }, i = 6; i < rangeData.length; i++) {
-                var row = rangeData[i], firstColOnRow = row[0];
-                if ("" !== firstColOnRow && "Place" !== firstColOnRow && isNaN(firstColOnRow) && !firstColOnRow.toLowerCase().includes("win")) for (packagedResults.seriesResults[firstColOnRow] = [], 
-                row = rangeData[i += 3]; "" !== row[0] && !(i >= rangeData.length); ) packagedResults.seriesResults[firstColOnRow].push(row), 
-                row = rangeData[++i];
-            }
-            return packagedResults;
-        }(function(documentId) {
-            var _a, file = DriveApp.getFileById(documentId);
-            if (!file) throw new Error("Could not find downloaded file to convert");
-            var config = {
-                title: "[Google Sheets] ".concat(file.getName()),
-                parents: [ {
-                    id: getTempFolderId()
-                } ],
-                mimeType: "application/vnd.google-apps.spreadsheet"
-            }, resultFile = null === (_a = Drive.Files) || void 0 === _a ? void 0 : _a.insert(config, file.getBlob());
-            if (!resultFile || !resultFile.id) throw new Error("Could not find converted file");
-            return resultFile.id;
-        }(xcelFileId));
-        !function(packagedResults) {
-            for (var mainSheet = SpreadsheetApp.openById(getMainSheetProps(packagedResults).id), sheetNames = mainSheet.getSheets().map((function(s) {
-                return s.getName();
-            })), _i = 0, _a = Object.keys(packagedResults.seriesResults); _i < _a.length; _i++) {
-                var seriesGroup = _a[_i];
-                sheetNames.includes(seriesGroup) || mainSheet.insertSheet(seriesGroup).getRange(1, 1, 1, 11).setValues([ [ "Runner Id", "Points Awarded", "Race", "Place", "Name", "City", "Age", "Overall", "Total Time", "Pace", "File Name" ] ]);
-            }
-        }(packagedResults), function(packagedResults) {
-            var mainSheetProps = getMainSheetProps(packagedResults), mainSheet = SpreadsheetApp.openById(mainSheetProps.id), uploadedFileName = packagedResults.fileName, raceName = packagedResults.raceName;
-            if (mainSheetProps.raceNames.includes(raceName)) throw new Error("Race has already been added. Please remove it before adding it again.");
-            mainSheetProps.raceNames.push(raceName);
-            for (var _i = 0, _a = Object.keys(packagedResults.seriesResults); _i < _a.length; _i++) {
-                var seriesGroup = _a[_i], seriesSheet = mainSheet.getSheetByName(seriesGroup);
-                if (!seriesSheet) throw new Error("Could not get series sheet tab in mainSheet: ".concat(mainSheet.getId(), " for series: ").concat(seriesGroup));
-                for (var _b = 0, _c = packagedResults.seriesResults[seriesGroup]; _b < _c.length; _b++) {
-                    var runner = _c[_b], nameArray = runner[1].toLowerCase().split(" "), age = runner[3], place = parseInt(runner[0]), runnerId = nameArray[0][0] + nameArray[nameArray.length - 1] + age + seriesGroup.toLowerCase()[0], pointsAwarded = getPointsFromPlace(place), row = getNextOpenRowInSeriesSheet(seriesSheet);
-                    seriesSheet.getRange(row, 1, 1, 11).setValues([ [ runnerId, pointsAwarded, raceName, place, runner[1], runner[2], age, runner[4], runner[5], runner[6], uploadedFileName ] ]);
+        var excelFileId, gSheetId, caughtError;
+        try {
+            excelFileId = function(formObject) {
+                var tempFolderId = getTempFolderId(), tempFolder = DriveApp.getFolderById(tempFolderId);
+                if (formObject.excelFile.length > 0) {
+                    var blob = formObject.excelFile;
+                    return tempFolder.createFile(blob).getId();
                 }
-            }
-            setMainSheetRaceNames(packagedResults, mainSheetProps.raceNames);
-        }(packagedResults);
+                throw new Error("File selected contains no content.");
+            }(formObject);
+            var packagedResults = function(documentId) {
+                for (var uploadedSheet = SpreadsheetApp.openById(documentId), uploadedSheetRange = uploadedSheet.getActiveSheet(), rangeData = uploadedSheetRange.getRange(1, 1, uploadedSheetRange.getMaxRows(), 7).getValues(), packagedResults = {
+                    fileName: uploadedSheet.getName(),
+                    raceName: rangeData[1][0],
+                    seriesResults: {}
+                }, i = 6; i < rangeData.length; i++) {
+                    var row = rangeData[i], firstColOnRow = row[0];
+                    if ("" !== firstColOnRow && "Place" !== firstColOnRow && isNaN(firstColOnRow) && !firstColOnRow.toLowerCase().includes("win")) for (packagedResults.seriesResults[firstColOnRow] = [], 
+                    row = rangeData[i += 3]; "" !== row[0] && !(i >= rangeData.length); ) packagedResults.seriesResults[firstColOnRow].push(row), 
+                    row = rangeData[++i];
+                }
+                return packagedResults;
+            }(gSheetId = function(documentId) {
+                var _a, file = DriveApp.getFileById(documentId);
+                if (!file) throw new Error("Could not find downloaded file to convert");
+                var config = {
+                    title: "[Google Sheets] ".concat(file.getName()),
+                    parents: [ {
+                        id: getTempFolderId()
+                    } ],
+                    mimeType: "application/vnd.google-apps.spreadsheet"
+                }, resultFile = null === (_a = Drive.Files) || void 0 === _a ? void 0 : _a.insert(config, file.getBlob());
+                if (!resultFile || !resultFile.id) throw new Error("Could not find converted file");
+                return resultFile.id;
+            }(excelFileId));
+            !function(packagedResults) {
+                for (var mainSheet = SpreadsheetApp.openById(getMainSheetProps(packagedResults).id), sheetNames = mainSheet.getSheets().map((function(s) {
+                    return s.getName();
+                })), _i = 0, _a = Object.keys(packagedResults.seriesResults); _i < _a.length; _i++) {
+                    var seriesGroup = _a[_i];
+                    sheetNames.includes(seriesGroup) || mainSheet.insertSheet(seriesGroup).getRange(1, 1, 1, 11).setValues([ [ "Runner Id", "Points Awarded", "Race", "Place", "Name", "City", "Age", "Overall", "Total Time", "Pace", "File Name" ] ]);
+                }
+            }(packagedResults), function(packagedResults) {
+                var mainSheetProps = getMainSheetProps(packagedResults), mainSheet = SpreadsheetApp.openById(mainSheetProps.id), uploadedFileName = packagedResults.fileName, raceName = packagedResults.raceName;
+                if (mainSheetProps.raceNames.includes(raceName)) throw new Error("Race has already been added. Please remove it before adding it again.");
+                mainSheetProps.raceNames.push(raceName);
+                for (var _i = 0, _a = Object.keys(packagedResults.seriesResults); _i < _a.length; _i++) {
+                    var seriesGroup = _a[_i], seriesSheet = mainSheet.getSheetByName(seriesGroup);
+                    if (!seriesSheet) throw new Error("Could not get series sheet tab in mainSheet: ".concat(mainSheet.getId(), " for series: ").concat(seriesGroup));
+                    for (var _b = 0, _c = packagedResults.seriesResults[seriesGroup]; _b < _c.length; _b++) {
+                        var runner = _c[_b], nameArray = runner[1].toLowerCase().split(" "), age = runner[3], place = parseInt(runner[0]), runnerId = nameArray[0][0] + nameArray[nameArray.length - 1] + age + seriesGroup.toLowerCase()[0], pointsAwarded = getPointsFromPlace(place), row = getNextOpenRowInSeriesSheet(seriesSheet);
+                        seriesSheet.getRange(row, 1, 1, 11).setValues([ [ runnerId, pointsAwarded, raceName, place, runner[1], runner[2], age, runner[4], runner[5], runner[6], uploadedFileName ] ]);
+                    }
+                }
+                setMainSheetRaceNames(packagedResults, mainSheetProps.raceNames);
+            }(packagedResults);
+        } catch (error) {
+            caughtError = error;
+        } finally {
+            var fileIds = [];
+            if (excelFileId != undefined && fileIds.push(excelFileId), gSheetId != undefined && fileIds.push(gSheetId), 
+            function(fileIds) {
+                for (var _i = 0, fileIds_1 = fileIds; _i < fileIds_1.length; _i++) {
+                    var fileId = fileIds_1[_i];
+                    DriveApp.getFileById(fileId).setTrashed(!0);
+                }
+            }(fileIds), caughtError) throw caughtError;
+        }
     }, __webpack_require__.g.test = function() {};
     for (var i in __webpack_exports__) this[i] = __webpack_exports__[i];
     __webpack_exports__.__esModule && Object.defineProperty(this, "__esModule", {

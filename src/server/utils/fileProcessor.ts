@@ -13,4 +13,10 @@ const uploadFile = (formObject) => {
     }
 }
 
-export { uploadFile }
+const cleanFiles = (fileIds: string[]) => {
+    for (let fileId of fileIds) {
+        DriveApp.getFileById(fileId).setTrashed(true);
+    }
+}
+
+export { uploadFile, cleanFiles }

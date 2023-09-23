@@ -1,5 +1,5 @@
-import { postMainReportToSheet, getMainSheetProps, packageSeriesGroups, placePackagedResultsToTabs, processSeriesGroupsTabs, generateMainReportJSON, convertToGoogleSheet } from "./utils/sheetUtils";
-import { uploadFile } from "./utils/uploadProcessor";
+import { packageSeriesGroups, placePackagedResultsToTabs, processSeriesGroupsTabs, convertToGoogleSheet } from "./utils/sheetUtils";
+import { uploadFile, cleanFiles } from "./utils/fileProcessor";
 
 // @ts-ignore
 global.doGet = (e) => {
@@ -8,11 +8,31 @@ global.doGet = (e) => {
 
 // @ts-ignore
 global.uploadHandler = (formObject) => {
-    const xcelFileId = uploadFile(formObject);
-    const gSheetId = convertToGoogleSheet(xcelFileId);
-    const packagedResults = packageSeriesGroups(gSheetId);
-    processSeriesGroupsTabs(packagedResults);
-    placePackagedResultsToTabs(packagedResults);
+    let excelFileId: string | undefined;
+    let gSheetId: string | undefined;
+    let caughtError;
+
+    try {
+        excelFileId = uploadFile(formObject);
+        gSheetId = convertToGoogleSheet(excelFileId);
+        const packagedResults = packageSeriesGroups(gSheetId);
+        processSeriesGroupsTabs(packagedResults);
+        placePackagedResultsToTabs(packagedResults);
+    } catch(error) {
+        caughtError = error;
+    } finally {
+        const fileIds: string[] = [];
+        if (excelFileId != undefined) fileIds.push(excelFileId);
+        if (gSheetId != undefined) fileIds.push (gSheetId);
+        
+        cleanFiles(fileIds);
+
+        if (caughtError) {
+            throw caughtError;
+        }
+    }
+
+
 }
 
 // @ts-ignore
