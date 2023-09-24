@@ -169,6 +169,8 @@ const processSeriesGroupsTabs = (packagedResults: PackagedResults) => {
     const mainSheet = SpreadsheetApp.openById(getMainSheetProps(packagedResults).id);
 
     const sheetNames = mainSheet.getSheets().map(s => s.getName());
+
+    if (!sheetNames.includes(RESULTS_SHEET_NAME)) mainSheet.insertSheet(RESULTS_SHEET_NAME);
     
     for (const seriesGroup of Object.keys(packagedResults.seriesResults)) {
         if (!sheetNames.includes(seriesGroup)) {
@@ -194,7 +196,7 @@ const placePackagedResultsToTabs = (packagedResults: PackagedResults) => {
         const seriesSheet = mainSheet.getSheetByName(seriesGroup);
         if (!seriesSheet) throw new Error(`Could not get series sheet tab in mainSheet: ${mainSheet.getId()} for series: ${seriesGroup}`);
         for (const runner of packagedResults.seriesResults[seriesGroup]) {
-            const nameArray = runner[1].toLowerCase().split(' ');
+            const nameArray = runner[1].trim().toLowerCase().split(' ');
             const age = runner[3];
             const place = parseInt(runner[0]);
             const runnerId = nameArray[0][0] + nameArray[nameArray.length-1] + age + seriesGroup.toLowerCase()[0];
@@ -294,8 +296,8 @@ const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainR
         }
     }
 
-    mainSheet.getSheetByName('Results')?.clear();
-    mainSheet.getSheetByName('Results')?.getRange(1, 1, recordsRangeValues.length, 2).setValues(recordsRangeValues);
+    mainSheet.getSheetByName(RESULTS_SHEET_NAME)?.clear();
+    mainSheet.getSheetByName(RESULTS_SHEET_NAME)?.getRange(1, 1, recordsRangeValues.length, 2).setValues(recordsRangeValues);
 }
 
 export { getTempFolderId, postMainReportToSheet, getMainSheetProps, getLongMainSheetProps, getShortMainSheetProps, placePackagedResultsToTabs, convertToGoogleSheet, packageSeriesGroups, processSeriesGroupsTabs, generateMainReportJSON };
