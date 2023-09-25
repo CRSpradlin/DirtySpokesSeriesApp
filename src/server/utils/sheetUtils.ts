@@ -2,7 +2,7 @@ type PackagedResults = {
     fileName: string,
     raceName: string,
     seriesResults: { [key: string]: string[][] }
-}
+};
 
 type MainReport = {
     [key: string]: {
@@ -12,16 +12,17 @@ type MainReport = {
             totalRaces: number
         }
     }
-}
+};
 
 type MainSheetProps = {
+    raceType: 'long' | 'short',
     id: string,
     raceNames: string[]
-}
+};
 
 const RESULTS_SHEET_NAME = 'Results';
 
-const getLongMainSheetProps = () => {
+const getLongMainSheetProps = (): MainSheetProps => {
     const props = PropertiesService.getScriptProperties();
     const id = props.getProperty('MAIN_LONG_SHEET_ID');
     const raceNamesProp = props.getProperty('MAIN_LONG_SHEET_RACE_NAMES');
@@ -36,6 +37,7 @@ const getLongMainSheetProps = () => {
 
     if (id) {
         return {
+            raceType: 'long',
             id,
             raceNames
         };
@@ -49,7 +51,7 @@ const setLongMainSheetRaces = (newRaces: string[]) => {
     props.setProperty('MAIN_LONG_SHEET_RACE_NAMES', JSON.stringify(newRaces));
 };
 
-const getShortMainSheetProps = () => {
+const getShortMainSheetProps = (): MainSheetProps => {
     const props = PropertiesService.getScriptProperties();
     const id = props.getProperty('MAIN_SHORT_SHEET_ID');
     const raceNamesProp = props.getProperty('MAIN_SHORT_SHEET_RACE_NAMES');
@@ -64,6 +66,7 @@ const getShortMainSheetProps = () => {
 
     if (id) {
         return {
+            raceType: 'short',
             id,
             raceNames
         };
@@ -85,7 +88,7 @@ const setMainSheetRaceNames = (packagedResults: PackagedResults, newRaces: strin
     } else {
         throw new Error('Could not determine main sheet to set new Race Names');
     } 
-}
+};
 
 const getMainSheetProps = (packagedResults: PackagedResults) => {
     const main_short_props = getShortMainSheetProps();
@@ -253,7 +256,7 @@ const generateMainReportJSON = (mainSheetId: string): MainReport => {
     }
 
     return mainReport;
-}
+};
 
 const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainReport, numReportedPerSeriesGroup = 3, allowedAbsences = 2) => {
     const mainSheet = SpreadsheetApp.openById(mainSheetProps.id);
@@ -298,6 +301,44 @@ const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainR
 
     mainSheet.getSheetByName(RESULTS_SHEET_NAME)?.clear();
     mainSheet.getSheetByName(RESULTS_SHEET_NAME)?.getRange(1, 1, recordsRangeValues.length, 2).setValues(recordsRangeValues);
+};
+
+const removeRace = (mainSheetProps: MainSheetProps, raceName: string) => {
+    if (!mainSheetProps.raceNames.includes(raceName)) 
+        throw new Error(`Could not find race: "${raceName}" to remove.`);
+
+    const mainSheet = SpreadsheetApp.openById(mainSheetProps.id);
+
+    const sheetTabs = mainSheet.getSheets();
+    
+    const failedSheets: string[] = [];
+    for (let sheet of sheetTabs) {
+        
+        try {
+            if (sheet.getName() === RESULTS_SHEET_NAME) continue;
+
+            const runnerValues = sheet.getRange(2, 1, sheet.getMaxRows(), 11).getValues();
+            const newRunnerValues: string[][] = [];
+    
+            for (let i=0; i<runnerValues.length; i++) {
+                if (runnerValues[i][2] != raceName) newRunnerValues.push(runnerValues[i]); 
+            }
+    
+            sheet.getRange(2, 1, newRunnerValues.length, 11).setValues(newRunnerValues);
+        } catch (e) {
+            failedSheets.push(sheet.getName());
+        }
+    }
+    if (failedSheets.length > 0) {
+        throw new Error(`Failed to remove race for seriesGroups: ${failedSheets.join(', ')}`);
+    } else {
+        mainSheetProps.raceNames.splice(mainSheetProps.raceNames.indexOf(raceName), 1);
+        if (mainSheetProps.raceType === 'long') {
+            setLongMainSheetRaces(mainSheetProps.raceNames);
+        } else {
+            setShortMainSheetRaces(mainSheetProps.raceNames);
+        }
+    }
 }
 
-export { getTempFolderId, postMainReportToSheet, getMainSheetProps, getLongMainSheetProps, getShortMainSheetProps, placePackagedResultsToTabs, convertToGoogleSheet, packageSeriesGroups, processSeriesGroupsTabs, generateMainReportJSON };
+export { removeRace, getTempFolderId, postMainReportToSheet, getMainSheetProps, getLongMainSheetProps, getShortMainSheetProps, placePackagedResultsToTabs, convertToGoogleSheet, packageSeriesGroups, processSeriesGroupsTabs, generateMainReportJSON };

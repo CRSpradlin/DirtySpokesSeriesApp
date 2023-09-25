@@ -1,10 +1,36 @@
-import { packageSeriesGroups, placePackagedResultsToTabs, processSeriesGroupsTabs, convertToGoogleSheet } from "./utils/sheetUtils";
+import { removeRace, getLongMainSheetProps, getShortMainSheetProps, packageSeriesGroups, placePackagedResultsToTabs, processSeriesGroupsTabs, convertToGoogleSheet } from "./utils/sheetUtils";
 import { uploadFile, cleanFiles } from "./utils/fileProcessor";
 
 // @ts-ignore
 global.doGet = (e) => {
     return HtmlService.createHtmlOutputFromFile('dist/index.html').setSandboxMode(HtmlService.SandboxMode.IFRAME).addMetaTag('viewport', 'width=device-width, initial-scale=1').setTitle("DirtySpokesSeriesApp");;
-}
+};
+
+// @ts-ignore
+global.removeRaceHandler = (formObject) => {
+    if (!formObject.raceType || (formObject.raceType != 'long' && formObject.raceType != 'short')) throw new Error('Invalid race type selected.');
+    if (!formObject.raceName) throw new Error('No race name given.');
+
+    let mainSheetProps;
+    if (formObject.raceType === 'long') {
+        mainSheetProps = getLongMainSheetProps();
+    } else {
+        mainSheetProps = getShortMainSheetProps();
+    }
+
+    removeRace(mainSheetProps, formObject.raceName);
+
+    // @ts-ignore
+    return global.getRaceNames()
+};
+
+// @ts-ignore
+global.getRaceNames = () => {
+    return {
+        'long': getLongMainSheetProps().raceNames,
+        'short': getShortMainSheetProps().raceNames
+    }
+};
 
 // @ts-ignore
 global.uploadHandler = (formObject) => {
@@ -31,13 +57,11 @@ global.uploadHandler = (formObject) => {
             throw caughtError;
         }
     }
-
-
-}
+};
 
 // @ts-ignore
 global.test = () => {
-}
+};
 
 // // @ts-ignore
 // global.setScriptProp = () => {
