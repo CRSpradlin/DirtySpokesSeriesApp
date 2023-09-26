@@ -99,7 +99,7 @@ function test() {}
     };
     // CONCATENATED MODULE: ./src/server/code.ts
     __webpack_require__.g.doGet = function(e) {
-        return HtmlService.createHtmlOutputFromFile("dist/index.html").setSandboxMode(HtmlService.SandboxMode.IFRAME).addMetaTag("viewport", "width=device-width, initial-scale=1").setTitle("DirtySpokesSeriesApp");
+        return HtmlService.createHtmlOutputFromFile("dist/index.html").setSandboxMode(HtmlService.SandboxMode.IFRAME).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL).addMetaTag("viewport", "width=device-width, initial-scale=1").setTitle("DirtySpokesSeriesApp");
     }, __webpack_require__.g.removeRaceHandler = function(formObject) {
         if (!formObject.raceType || "long" != formObject.raceType && "short" != formObject.raceType) throw new Error("Invalid race type selected.");
         if (!formObject.raceName) throw new Error("No race name given.");
