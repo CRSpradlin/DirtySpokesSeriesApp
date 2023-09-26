@@ -44,11 +44,14 @@ export default class Root extends React.Component {
 							<a className={`bg-white inline-block py-2 px-4 font-semibold ${this.state.activeTabName === 'removeUploadForm'?'border-l border-t border-r rounded-t text-blue-700':'text-gray-400 hover:text-blue-300'}`} href="#" onClick={() => this.setActiveTab('removeUploadForm')}>Remove</a>
 						</li>
 						<li className="mr-1">
-							<a className={`bg-white inline-block py-2 px-4 font-semibold ${this.state.activeTabName === 'dangerForm'?'border-l border-t border-r rounded-t text-blue-700':'text-gray-400 hover:text-blue-300'}`} href="#" onClick={() => this.setActiveTab('dangerForm')}>Tab</a>
+							<a className={`bg-white inline-block py-2 px-4 font-semibold ${this.state.activeTabName === 'generateForm'?'border-l border-t border-r rounded-t text-blue-700':'text-gray-400 hover:text-blue-300'}`} href="#" onClick={() => this.setActiveTab('generateForm')}>Generate</a>
+						</li>
+						<li className="mr-1">
+							<a className={`bg-white inline-block py-2 px-4 font-semibold ${this.state.activeTabName === 'dangerForm'?'border-l border-t border-r rounded-t text-red-700':'text-gray-400 hover:text-red-300'}`} href="#" onClick={() => this.setActiveTab('dangerForm')}>Danger</a>
 						</li>
 					</ul>
 				</div>
-				<div className="h-full m-10 flex flex-col text-center">
+				<div className="h-full mt-10 flex flex-col text-center">
 					{this.state.activeTabComponent}
 				</div>
 			</div>
