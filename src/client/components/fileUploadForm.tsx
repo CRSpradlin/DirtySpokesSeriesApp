@@ -32,6 +32,7 @@ export default class FileUploadForm extends React.Component {
 
 	public onSuccessfulFileUpload = () => {
 		this.setState({ loading: false });
+		alert("Successfully Uploaded New Race");
 	};
 
 	public render() {

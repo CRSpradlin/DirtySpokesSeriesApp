@@ -6,6 +6,7 @@ export default class RemoveUploadForm extends React.Component {
 		loading: false,
 		racesLoading: true,
 		raceNames: {},
+		selectedRaceType: 'long',
 		selectedRaceNames: ["Loading..."]
 	};
 	
@@ -15,19 +16,30 @@ export default class RemoveUploadForm extends React.Component {
 
 	public handleFailure = (error) => {
 		alert('Error Occured: ' + error.message);
+		this.setState({ 
+			loading: false,
+			racesLoading: false
+		 });
 	}
 
 	public setRaceNames = (raceNames) => {
-		this.setState({ raceNames });
-		this.selectedRaceChanged({ target: { value: 'long' }});
-		this.setState({ 
+		this.setState({
+			raceNames,
+			selectedRaceType: 'long',
 			racesLoading: false,
 			loading: false 
 		});
+		this.selectedRaceChanged({ target: { value: 'long' }});
 	};
+
+	public successfullyRemovedRace = (raceNames) => {
+		this.setRaceNames(raceNames);
+		alert("Successfully Removed Race");
+	}
 
 	public selectedRaceChanged = (event) => {
 		this.setState({
+			selectedRaceType: event.target.value,
 			selectedRaceNames: this.state.raceNames[event.target.value]
 		});
 	};
@@ -49,7 +61,7 @@ export default class RemoveUploadForm extends React.Component {
 
 		 // @ts-ignore
 		 google.script.run
-		 	.withSuccessHandler(this.setRaceNames)
+		 	.withSuccessHandler(this.successfullyRemovedRace)
 			.withFailureHandler(this.handleFailure)
 			.removeRaceHandler(document.getElementById("removeForm"));
 	};
@@ -61,14 +73,14 @@ export default class RemoveUploadForm extends React.Component {
 				<form id="removeForm" onSubmit={this.handleSubmit}>
 					<div className="m-3">
 						<span className="text-sky-700">Race Type: </span>
-						<select name="raceType" onChange={this.selectedRaceChanged}>
+						<select name="raceType" value={this.state.selectedRaceType} id="raceType" onChange={this.selectedRaceChanged}>
 							<option key="0" value="long">Long Course</option>
 							<option key="1" value="short">Short Course</option>
 						</select>
 					</div>
 					<div className="m-3">
 						<span className="text-sky-700">Race Name: </span>
-						<select id="raceName" name="raceName" disabled={this.state.racesLoading}>
+						<select name="raceName" disabled={this.state.racesLoading}>
 							{this.state.selectedRaceNames.map((option, index) => (
 								<option key={index} value={option}>{option}</option>
 							))}
