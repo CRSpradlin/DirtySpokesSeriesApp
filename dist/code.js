@@ -1,5 +1,7 @@
 function doGet(e) {}
 
+function generateReport(formObject) {}
+
 function removeRaceHandler(formObject) {}
 
 function getRaceNames() {}
@@ -100,6 +102,72 @@ function test() {}
     // CONCATENATED MODULE: ./src/server/code.ts
     __webpack_require__.g.doGet = function(e) {
         return HtmlService.createHtmlOutputFromFile("dist/index.html").setSandboxMode(HtmlService.SandboxMode.IFRAME).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL).addMetaTag("viewport", "width=device-width, initial-scale=1").setTitle("DirtySpokesSeriesApp");
+    }, __webpack_require__.g.generateReport = function(formObject) {
+        if (!formObject.raceType || "long" != formObject.raceType && "short" != formObject.raceType) throw new Error("Invalid race type selected.");
+        var mainSheetProps, raceType = formObject.raceType, numberPerSeries = parseInt(formObject.numberPerSeries), allowedAbsences = parseInt(formObject.allowedAbsences);
+        !function(mainSheetProps, mainReport, numReportedPerSeriesGroup, allowedAbsences) {
+            var _a, _b;
+            void 0 === numReportedPerSeriesGroup && (numReportedPerSeriesGroup = 3), void 0 === allowedAbsences && (allowedAbsences = 2);
+            var mainSheet = SpreadsheetApp.openById(mainSheetProps.id);
+            if (!mainSheet) throw new Error("Cannot open main sheet with id: ".concat(mainSheetProps.id));
+            for (var recordsRangeValues = [], _loop_1 = function(seriesGroup) {
+                for (var seriesArray = [ [ seriesGroup, "" ] ], _d = 0, _e = Object.keys(mainReport[seriesGroup]); _d < _e.length; _d++) {
+                    var runner = _e[_d];
+                    if (mainSheetProps.raceNames.length > allowedAbsences) {
+                        if (!(mainReport[seriesGroup][runner].totalRaces >= mainSheetProps.raceNames.length - allowedAbsences)) continue;
+                        seriesArray.push([ mainReport[seriesGroup][runner].name, mainReport[seriesGroup][runner].totalPoints + "" ]);
+                    } else seriesArray.push([ mainReport[seriesGroup][runner].name, mainReport[seriesGroup][runner].totalPoints + "" ]);
+                }
+                seriesArray.sort((function(a, b) {
+                    return a[0] == seriesGroup ? -1 : parseInt(a[1]) < parseInt(b[1]) ? 1 : parseInt(a[1]) > parseInt(b[1]) ? -1 : 0;
+                }));
+                var numRunnersOverReportLimit = seriesArray.length - 1 - numReportedPerSeriesGroup;
+                if (numRunnersOverReportLimit > 0) for (var i = 0; i < numRunnersOverReportLimit; i++) seriesArray.pop();
+                for (var _f = 0, seriesArray_1 = seriesArray; _f < seriesArray_1.length; _f++) {
+                    var row = seriesArray_1[_f];
+                    recordsRangeValues.push(row);
+                }
+            }, _i = 0, _c = Object.keys(mainReport); _i < _c.length; _i++) _loop_1(_c[_i]);
+            null === (_a = mainSheet.getSheetByName("Results")) || void 0 === _a || _a.clear(), 
+            null === (_b = mainSheet.getSheetByName("Results")) || void 0 === _b || _b.getRange(1, 1, recordsRangeValues.length, 2).setValues(recordsRangeValues);
+        }(mainSheetProps = "long" === raceType ? getLongMainSheetProps() : getShortMainSheetProps(), function(mainSheetId) {
+            var mainSheet = SpreadsheetApp.openById(mainSheetId);
+            if (!mainSheet) throw new Error("Cannot open main sheet with id: ".concat(mainSheetId));
+            for (var mainReport = {}, _i = 0, sheets_1 = mainSheet.getSheets(); _i < sheets_1.length; _i++) {
+                var sheet = sheets_1[_i], seriesGroup = sheet.getName();
+                if ("Results" !== seriesGroup) {
+                    mainReport[seriesGroup] = {};
+                    for (var _a = 0, seriesGroupRange_1 = sheet.getRange(2, 1, sheet.getMaxRows(), 11).getValues(); _a < seriesGroupRange_1.length; _a++) {
+                        var record = seriesGroupRange_1[_a];
+                        if ("Runner Id" !== record[0] && "" !== record[0].trim()) {
+                            var mainReportForRunner = mainReport[seriesGroup][record[0]];
+                            mainReportForRunner ? (mainReportForRunner.totalPoints += parseInt(record[1]), mainReportForRunner.totalRaces += 1) : mainReport[seriesGroup][record[0]] = {
+                                name: record[4],
+                                totalPoints: parseInt(record[1]),
+                                totalRaces: 1
+                            };
+                        }
+                    }
+                }
+            }
+            return mainReport;
+        }(mainSheetProps.id), numberPerSeries, allowedAbsences);
+        var blob = function(mainSheetProps) {
+            for (var mainSheet = SpreadsheetApp.openById(mainSheetProps.id), mainSheetCopy = (mainSheet.getSheetByName("Results"), 
+            mainSheet.copy("Temp Results Copy")), _i = 0, _a = mainSheetCopy.getSheets(); _i < _a.length; _i++) {
+                var sheet = _a[_i];
+                "Results" != sheet.getName() && mainSheetCopy.deleteSheet(sheet);
+            }
+            var url = "https://docs.google.com/feeds/download/spreadsheets/Export?key=" + mainSheetCopy.getId() + "&exportFormat=xlsx", params = {
+                method: "get",
+                headers: {
+                    Authorization: "Bearer " + ScriptApp.getOAuthToken()
+                },
+                muteHttpExceptions: !0
+            }, blob = UrlFetchApp.fetch(url, params).getBlob();
+            return blob.setName("GeneratedReport.xlsx"), blob;
+        }(mainSheetProps);
+        return "data:".concat(MimeType.MICROSOFT_EXCEL, ";base64,") + Utilities.base64Encode(blob.getBytes());
     }, __webpack_require__.g.removeRaceHandler = function(formObject) {
         if (!formObject.raceType || "long" != formObject.raceType && "short" != formObject.raceType) throw new Error("Invalid race type selected.");
         if (!formObject.raceName) throw new Error("No race name given.");

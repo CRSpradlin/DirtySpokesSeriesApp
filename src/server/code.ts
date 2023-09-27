@@ -1,10 +1,33 @@
-import { removeRace, getLongMainSheetProps, getShortMainSheetProps, packageSeriesGroups, placePackagedResultsToTabs, processSeriesGroupsTabs, convertToGoogleSheet } from "./utils/sheetUtils";
+import { MainSheetProps, getMainSheetResultsBlob, generateMainReportJSON, postMainReportToSheet, removeRace, getLongMainSheetProps, getShortMainSheetProps, packageSeriesGroups, placePackagedResultsToTabs, processSeriesGroupsTabs, convertToGoogleSheet } from "./utils/sheetUtils";
 import { uploadFile, cleanFiles } from "./utils/fileProcessor";
 
 // @ts-ignore
 global.doGet = (e) => {
     return HtmlService.createHtmlOutputFromFile('dist/index.html').setSandboxMode(HtmlService.SandboxMode.IFRAME).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL).addMetaTag('viewport', 'width=device-width, initial-scale=1').setTitle("DirtySpokesSeriesApp");;
 };
+
+// @ts-ignore
+global.generateReport = (formObject) => {
+    if (!formObject.raceType || (formObject.raceType != 'long' && formObject.raceType != 'short')) throw new Error('Invalid race type selected.');
+    const raceType = formObject.raceType;
+    const numberPerSeries = parseInt(formObject.numberPerSeries);
+    const allowedAbsences = parseInt(formObject.allowedAbsences);
+
+    let mainSheetProps: MainSheetProps;
+    if (raceType === 'long')
+        mainSheetProps = getLongMainSheetProps();
+    else
+        mainSheetProps = getShortMainSheetProps();
+
+    const mainReportJSON = generateMainReportJSON(mainSheetProps.id);
+    postMainReportToSheet(mainSheetProps, mainReportJSON, numberPerSeries, allowedAbsences);
+
+    const blob = getMainSheetResultsBlob(mainSheetProps);
+    //@ts-ignore
+    const data = `data:${MimeType.MICROSOFT_EXCEL};base64,` + Utilities.base64Encode(blob.getBytes())
+    
+    return data;
+}
 
 // @ts-ignore
 global.removeRaceHandler = (formObject) => {

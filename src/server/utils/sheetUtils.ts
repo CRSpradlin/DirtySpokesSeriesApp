@@ -341,4 +341,34 @@ const removeRace = (mainSheetProps: MainSheetProps, raceName: string) => {
     }
 }
 
-export { removeRace, getTempFolderId, postMainReportToSheet, getMainSheetProps, getLongMainSheetProps, getShortMainSheetProps, placePackagedResultsToTabs, convertToGoogleSheet, packageSeriesGroups, processSeriesGroupsTabs, generateMainReportJSON };
+const getMainSheetResultsBlob = (mainSheetProps: MainSheetProps) => {
+    const mainSheet = SpreadsheetApp.openById(mainSheetProps.id);
+    const resultsSheet = mainSheet.getSheetByName(RESULTS_SHEET_NAME);
+
+    const mainSheetCopy = mainSheet.copy('Temp Results Copy');
+    for (let sheet of mainSheetCopy.getSheets()) {
+        if (sheet.getName() != RESULTS_SHEET_NAME)
+            mainSheetCopy.deleteSheet(sheet);
+    }
+
+    const url = "https://docs.google.com/feeds/download/spreadsheets/Export?key=" + mainSheetCopy.getId() + "&exportFormat=xlsx";
+
+    const params = {
+      method      : "get",
+      headers     : {"Authorization": "Bearer " + ScriptApp.getOAuthToken()},
+      muteHttpExceptions: true
+    };
+
+    // @ts-ignore
+    const blob = UrlFetchApp.fetch(url, params).getBlob();
+
+    blob.setName("GeneratedReport.xlsx");
+    
+    // const resultsBlob = mainSheetCopy.getAs('application/pdf');
+    
+    // DriveApp.getFileById(mainSheetCopy.getId()).setTrashed(true);
+
+    return blob;
+}
+
+export { MainSheetProps, getMainSheetResultsBlob, removeRace, getTempFolderId, postMainReportToSheet, getMainSheetProps, getLongMainSheetProps, getShortMainSheetProps, placePackagedResultsToTabs, convertToGoogleSheet, packageSeriesGroups, processSeriesGroupsTabs, generateMainReportJSON };

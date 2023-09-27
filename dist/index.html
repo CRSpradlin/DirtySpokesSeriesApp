@@ -6931,6 +6931,109 @@
                 }))));
             }, RemoveUploadForm;
         }(react.Component);
+        // CONCATENATED MODULE: ./src/client/components/generateForm.tsx
+        var generateForm_extends = undefined && undefined.__extends || function() {
+            var extendStatics = function(d, b) {
+                return extendStatics = Object.setPrototypeOf || {
+                    __proto__: []
+                } instanceof Array && function(d, b) {
+                    d.__proto__ = b;
+                } || function(d, b) {
+                    for (var p in b) Object.prototype.hasOwnProperty.call(b, p) && (d[p] = b[p]);
+                }, extendStatics(d, b);
+            };
+            return function(d, b) {
+                if ("function" != typeof b && null !== b) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __);
+            };
+        }();
+        /* harmony default export */ const generateForm = function(_super) {
+            function GenerateForm(props) {
+                var _this = _super.call(this, props) || this;
+                return _this.state = {
+                    loading: !1,
+                    selectedRaceType: "long"
+                }, _this.handleFailure = function(error) {
+                    alert("Error Occured: " + error.message), _this.setState({
+                        loading: !1
+                    });
+                }, _this.successfullyGeneratedReport = function(data) {
+                    var _a, _b, link = document.createElement("a");
+                    link.href = data, link.download = "GeneratedReport.xlsx", null === (_a = document.getElementById("generateForm")) || void 0 === _a || _a.appendChild(link), 
+                    link.dispatchEvent(new MouseEvent("click", {
+                        bubbles: !0,
+                        cancelable: !0,
+                        view: window
+                    })), null === (_b = document.getElementById("generateForm")) || void 0 === _b || _b.removeChild(link), 
+                    _this.setState({
+                        loading: !1
+                    });
+                }, _this.handleSubmit = function(e) {
+                    e.preventDefault(), _this.setState({
+                        loading: !0
+                    }), google.script.run.withSuccessHandler(_this.successfullyGeneratedReport).withFailureHandler(_this.handleFailure).generateReport(document.getElementById("generateForm"));
+                }, _this;
+            }
+            return generateForm_extends(GenerateForm, _super), GenerateForm.prototype.render = function() {
+                var _this = this;
+                return react.createElement("div", {
+                    className: "content-center"
+                }, react.createElement("span", {
+                    className: "text-sky-700 text-lg p-6"
+                }, "Select Race Type and Race Name to Remove"), react.createElement("form", {
+                    id: "generateForm",
+                    onSubmit: this.handleSubmit
+                }, react.createElement("div", {
+                    className: "m-3"
+                }, react.createElement("span", {
+                    className: "text-sky-700"
+                }, "Race Type: "), react.createElement("select", {
+                    name: "raceType",
+                    value: this.state.selectedRaceType,
+                    id: "raceType",
+                    onChange: function(e) {
+                        return _this.setState({
+                            selectedRaceType: e.target.value
+                        });
+                    }
+                }, react.createElement("option", {
+                    key: "0",
+                    value: "long"
+                }, "Long Course"), react.createElement("option", {
+                    key: "1",
+                    value: "short"
+                }, "Short Course"))), react.createElement("div", {
+                    className: "m-3"
+                }, react.createElement("span", {
+                    className: "text-sky-700"
+                }, "Allowed Absences: "), react.createElement("input", {
+                    name: "allowedAbsences",
+                    type: "number",
+                    min: "0",
+                    max: "10"
+                })), react.createElement("div", {
+                    className: "m-3"
+                }, react.createElement("span", {
+                    className: "text-sky-700"
+                }, "Number per Series: "), react.createElement("input", {
+                    name: "numberPerSeries",
+                    type: "number",
+                    min: "1",
+                    max: "50"
+                })), react.createElement("div", {
+                    className: "m-3"
+                }, react.createElement("input", {
+                    type: "submit",
+                    value: this.state.loading ? "Generating..." : "Submit",
+                    disabled: this.state.loading,
+                    className: "w-[10rem] ".concat(this.state.loading ? "bg-sky-700" : " bg-sky-500 hover:bg-sky-700", " px-5 py-2 text-sm rounded-full font-semibold text-white")
+                }))));
+            }, GenerateForm;
+        }(react.Component);
         // CONCATENATED MODULE: ./src/client/components/root.tsx
         var root_extends = undefined && undefined.__extends || function() {
             var extendStatics = function(d, b) {
@@ -6972,6 +7075,13 @@
                     this.setState({
                         activeTabName: tabName,
                         activeTabComponent: react.createElement(removeUploadForm, null)
+                    });
+                    break;
+
+                  case "generateForm":
+                    this.setState({
+                        activeTabName: tabName,
+                        activeTabComponent: react.createElement(generateForm, null)
                     });
                     break;
 
