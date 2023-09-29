@@ -1,4 +1,4 @@
-import { MainSheetProps, getMainSheetResultsBlob, generateMainReportJSON, postMainReportToSheet, removeRace, getLongMainSheetProps, getShortMainSheetProps, packageSeriesGroups, placePackagedResultsToTabs, processSeriesGroupsTabs, convertToGoogleSheet } from "./utils/sheetUtils";
+import { MainSheetProps, getMainSheetResultsXLSXBlob, generateMainReportJSON, postMainReportToSheet, removeRace, getLongMainSheetProps, getShortMainSheetProps, packageSeriesGroups, placePackagedResultsToTabs, processSeriesGroupsTabs, convertToGoogleSheet } from "./utils/sheetUtils";
 import { uploadFile, cleanFiles } from "./utils/fileProcessor";
 
 // @ts-ignore
@@ -22,7 +22,8 @@ global.generateReport = (formObject) => {
     const mainReportJSON = generateMainReportJSON(mainSheetProps.id);
     postMainReportToSheet(mainSheetProps, mainReportJSON, numberPerSeries, allowedAbsences);
 
-    const blob = getMainSheetResultsBlob(mainSheetProps);
+    const blob = getMainSheetResultsXLSXBlob(mainSheetProps);
+    
     //@ts-ignore
     const data = `data:${MimeType.MICROSOFT_EXCEL};base64,` + Utilities.base64Encode(blob.getBytes())
     

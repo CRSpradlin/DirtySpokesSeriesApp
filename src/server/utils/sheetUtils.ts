@@ -173,11 +173,31 @@ const processSeriesGroupsTabs = (packagedResults: PackagedResults) => {
 
     const sheetNames = mainSheet.getSheets().map(s => s.getName());
 
-    if (!sheetNames.includes(RESULTS_SHEET_NAME)) mainSheet.insertSheet(RESULTS_SHEET_NAME);
+    if (!sheetNames.includes(RESULTS_SHEET_NAME)) {
+        mainSheet.insertSheet(RESULTS_SHEET_NAME, 0);
+    }
     
     for (const seriesGroup of Object.keys(packagedResults.seriesResults)) {
         if (!sheetNames.includes(seriesGroup)) {
-            const newSheet = mainSheet.insertSheet(seriesGroup);
+            let newSheet;
+            if (sheetNames.length == 1) {
+                sheetNames.push(seriesGroup);
+                newSheet = mainSheet.insertSheet(seriesGroup, 1);
+            } else {
+                for (let i=1; i <= sheetNames.length; i++) {
+                    if (i == sheetNames.length) {
+                        sheetNames.push(seriesGroup);
+                        newSheet = mainSheet.insertSheet(seriesGroup);
+                        break; 
+                    }
+                    if (sheetNames[i] > seriesGroup) {
+                        sheetNames.splice(i, 0, seriesGroup);
+                        newSheet = mainSheet.insertSheet(seriesGroup, i);
+                        break;
+                    }
+                }
+            }
+            if (!newSheet) throw new Error(`Could not place the new sheet: ${seriesGroup}`);
             newSheet.getRange(1, 1, 1, 11).setValues([['Runner Id','Points Awarded','Race','Place','Name','City','Age','Overall','Total Time','Pace','File Name']]);
         }
     }
@@ -294,8 +314,12 @@ const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainR
                 seriesArray.pop();
         }
 
-        for (let row of seriesArray) {
-            recordsRangeValues.push(row);
+        seriesArray.push(['', '']); // Spacer to separate series groups
+
+        if (seriesArray.length < 2) {
+            for (let row of seriesArray) {
+                recordsRangeValues.push(row);
+            }
         }
     }
 
@@ -341,9 +365,8 @@ const removeRace = (mainSheetProps: MainSheetProps, raceName: string) => {
     }
 }
 
-const getMainSheetResultsBlob = (mainSheetProps: MainSheetProps) => {
+const getMainSheetResultsXLSXBlob = (mainSheetProps: MainSheetProps) => {
     const mainSheet = SpreadsheetApp.openById(mainSheetProps.id);
-    const resultsSheet = mainSheet.getSheetByName(RESULTS_SHEET_NAME);
 
     const mainSheetCopy = mainSheet.copy('Temp Results Copy');
     for (let sheet of mainSheetCopy.getSheets()) {
@@ -363,12 +386,8 @@ const getMainSheetResultsBlob = (mainSheetProps: MainSheetProps) => {
     const blob = UrlFetchApp.fetch(url, params).getBlob();
 
     blob.setName("GeneratedReport.xlsx");
-    
-    // const resultsBlob = mainSheetCopy.getAs('application/pdf');
-    
-    // DriveApp.getFileById(mainSheetCopy.getId()).setTrashed(true);
 
     return blob;
 }
 
-export { MainSheetProps, getMainSheetResultsBlob, removeRace, getTempFolderId, postMainReportToSheet, getMainSheetProps, getLongMainSheetProps, getShortMainSheetProps, placePackagedResultsToTabs, convertToGoogleSheet, packageSeriesGroups, processSeriesGroupsTabs, generateMainReportJSON };
+export { MainSheetProps, getMainSheetResultsXLSXBlob, removeRace, getTempFolderId, postMainReportToSheet, getMainSheetProps, getLongMainSheetProps, getShortMainSheetProps, placePackagedResultsToTabs, convertToGoogleSheet, packageSeriesGroups, processSeriesGroupsTabs, generateMainReportJSON };
