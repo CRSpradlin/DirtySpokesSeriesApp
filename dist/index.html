@@ -7034,6 +7034,41 @@
                 }))));
             }, GenerateForm;
         }(react.Component);
+        // CONCATENATED MODULE: ./src/client/components/dangerForm.tsx
+        var dangerForm_extends = undefined && undefined.__extends || function() {
+            var extendStatics = function(d, b) {
+                return extendStatics = Object.setPrototypeOf || {
+                    __proto__: []
+                } instanceof Array && function(d, b) {
+                    d.__proto__ = b;
+                } || function(d, b) {
+                    for (var p in b) Object.prototype.hasOwnProperty.call(b, p) && (d[p] = b[p]);
+                }, extendStatics(d, b);
+            };
+            return function(d, b) {
+                if ("function" != typeof b && null !== b) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+                function __() {
+                    this.constructor = d;
+                }
+                extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
+                new __);
+            };
+        }();
+        /* harmony default export */ const dangerForm = function(_super) {
+            function DangerForm(props) {
+                var _this = _super.call(this, props) || this;
+                return _this.state = {
+                    loading: !1
+                }, _this;
+            }
+            return dangerForm_extends(DangerForm, _super), DangerForm.prototype.render = function() {
+                return react.createElement("div", {
+                    className: "content-center"
+                }, react.createElement("span", {
+                    className: "text-red-700 text-lg p-6"
+                }, "Danger"));
+            }, DangerForm;
+        }(react.Component);
         // CONCATENATED MODULE: ./src/client/components/root.tsx
         var root_extends = undefined && undefined.__extends || function() {
             var extendStatics = function(d, b) {
@@ -7082,6 +7117,13 @@
                     this.setState({
                         activeTabName: tabName,
                         activeTabComponent: react.createElement(generateForm, null)
+                    });
+                    break;
+
+                  case "dangerForm":
+                    this.setState({
+                        activeTabName: tabName,
+                        activeTabComponent: react.createElement(dangerForm, null)
                     });
                     break;
 

@@ -2,6 +2,7 @@ import React from "react";
 import FileUploadForm from "./fileUploadForm";
 import RemoveUploadForm from "./removeUploadForm";
 import GenerateForm from "./generateForm";
+import DangerForm from "./dangerForm";
 
 export default class Root extends React.Component {
 
@@ -32,6 +33,12 @@ export default class Root extends React.Component {
 				this.setState({
 					activeTabName: tabName,
 					activeTabComponent: <GenerateForm />
+				});
+				break;
+			case 'dangerForm':
+				this.setState({
+					activeTabName: tabName,
+					activeTabComponent: <DangerForm />
 				});
 				break;
 			default:

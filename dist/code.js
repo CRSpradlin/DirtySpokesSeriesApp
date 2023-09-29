@@ -123,8 +123,7 @@ function test() {}
                 }));
                 var numRunnersOverReportLimit = seriesArray.length - 1 - numReportedPerSeriesGroup;
                 if (numRunnersOverReportLimit > 0) for (var i = 0; i < numRunnersOverReportLimit; i++) seriesArray.pop();
-                seriesArray.push([ "", "" ]);
-                for (var _f = 0, seriesArray_1 = seriesArray; _f < seriesArray_1.length; _f++) {
+                if (seriesArray.push([ "", "" ]), seriesArray.length < 2) for (var _f = 0, seriesArray_1 = seriesArray; _f < seriesArray_1.length; _f++) {
                     var row = seriesArray_1[_f];
                     recordsRangeValues.push(row);
                 }
