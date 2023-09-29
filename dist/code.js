@@ -123,6 +123,7 @@ function test() {}
                 }));
                 var numRunnersOverReportLimit = seriesArray.length - 1 - numReportedPerSeriesGroup;
                 if (numRunnersOverReportLimit > 0) for (var i = 0; i < numRunnersOverReportLimit; i++) seriesArray.pop();
+                seriesArray.push([ "", "" ]);
                 for (var _f = 0, seriesArray_1 = seriesArray; _f < seriesArray_1.length; _f++) {
                     var row = seriesArray_1[_f];
                     recordsRangeValues.push(row);
@@ -153,8 +154,7 @@ function test() {}
             return mainReport;
         }(mainSheetProps.id), numberPerSeries, allowedAbsences);
         var blob = function(mainSheetProps) {
-            for (var mainSheet = SpreadsheetApp.openById(mainSheetProps.id), mainSheetCopy = (mainSheet.getSheetByName("Results"), 
-            mainSheet.copy("Temp Results Copy")), _i = 0, _a = mainSheetCopy.getSheets(); _i < _a.length; _i++) {
+            for (var mainSheetCopy = SpreadsheetApp.openById(mainSheetProps.id).copy("Temp Results Copy"), _i = 0, _a = mainSheetCopy.getSheets(); _i < _a.length; _i++) {
                 var sheet = _a[_i];
                 "Results" != sheet.getName() && mainSheetCopy.deleteSheet(sheet);
             }
@@ -233,10 +233,24 @@ function test() {}
                 var mainSheet = SpreadsheetApp.openById(getMainSheetProps(packagedResults).id), sheetNames = mainSheet.getSheets().map((function(s) {
                     return s.getName();
                 }));
-                sheetNames.includes("Results") || mainSheet.insertSheet("Results");
+                sheetNames.includes("Results") || mainSheet.insertSheet("Results", 0);
                 for (var _i = 0, _a = Object.keys(packagedResults.seriesResults); _i < _a.length; _i++) {
                     var seriesGroup = _a[_i];
-                    sheetNames.includes(seriesGroup) || mainSheet.insertSheet(seriesGroup).getRange(1, 1, 1, 11).setValues([ [ "Runner Id", "Points Awarded", "Race", "Place", "Name", "City", "Age", "Overall", "Total Time", "Pace", "File Name" ] ]);
+                    if (!sheetNames.includes(seriesGroup)) {
+                        var newSheet = void 0;
+                        if (1 == sheetNames.length) sheetNames.push(seriesGroup), newSheet = mainSheet.insertSheet(seriesGroup, 1); else for (var i = 1; i <= sheetNames.length; i++) {
+                            if (i == sheetNames.length) {
+                                sheetNames.push(seriesGroup), newSheet = mainSheet.insertSheet(seriesGroup);
+                                break;
+                            }
+                            if (sheetNames[i] > seriesGroup) {
+                                sheetNames.splice(i, 0, seriesGroup), newSheet = mainSheet.insertSheet(seriesGroup, i);
+                                break;
+                            }
+                        }
+                        if (!newSheet) throw new Error("Could not place the new sheet: ".concat(seriesGroup));
+                        newSheet.getRange(1, 1, 1, 11).setValues([ [ "Runner Id", "Points Awarded", "Race", "Place", "Name", "City", "Age", "Overall", "Total Time", "Pace", "File Name" ] ]);
+                    }
                 }
             }(packagedResults), placePackagedResultsToTabs(packagedResults);
         } catch (error) {
