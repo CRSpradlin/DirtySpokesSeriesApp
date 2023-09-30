@@ -8,6 +8,8 @@ function getRaceNames() {}
 
 function uploadHandler(formObject) {}
 
+function clearReports() {}
+
 function test() {}
 
  /******/ (() => {
@@ -264,6 +266,19 @@ function test() {}
                 }
             }(fileIds), caughtError) throw caughtError;
         }
+    }, __webpack_require__.g.clearReports = function() {
+        !function() {
+            var longSheet = SpreadsheetApp.openById(getLongMainSheetProps().id), longResultsSheet = longSheet.getSheetByName("Results");
+            longResultsSheet && longResultsSheet.getRange(1, 1, longResultsSheet.getMaxRows(), longResultsSheet.getMaxColumns()).clear();
+            for (var _i = 0, _a = longSheet.getSheets(); _i < _a.length; _i++) "Results" != (sheet = _a[_i]).getName() && longSheet.deleteSheet(sheet);
+            var shortSheet = SpreadsheetApp.openById(getShortMainSheetProps().id), shortResultsSheet = shortSheet.getSheetByName("Results");
+            shortResultsSheet && shortResultsSheet.getRange(1, 1, shortResultsSheet.getMaxRows(), shortResultsSheet.getMaxColumns()).clear();
+            for (var _b = 0, _c = shortSheet.getSheets(); _b < _c.length; _b++) {
+                var sheet;
+                "Results" != (sheet = _c[_b]).getName() && shortSheet.deleteSheet(sheet);
+            }
+            setLongMainSheetRaces([]), setShortMainSheetRaces([]);
+        }();
     }, __webpack_require__.g.test = function() {};
     for (var i in __webpack_exports__) this[i] = __webpack_exports__[i];
     __webpack_exports__.__esModule && Object.defineProperty(this, "__esModule", {

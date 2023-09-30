@@ -390,4 +390,29 @@ const getMainSheetResultsXLSXBlob = (mainSheetProps: MainSheetProps) => {
     return blob;
 }
 
-export { MainSheetProps, getMainSheetResultsXLSXBlob, removeRace, getTempFolderId, postMainReportToSheet, getMainSheetProps, getLongMainSheetProps, getShortMainSheetProps, placePackagedResultsToTabs, convertToGoogleSheet, packageSeriesGroups, processSeriesGroupsTabs, generateMainReportJSON };
+const clearMainSheetReports = () => {
+    const longSheet = SpreadsheetApp.openById(getLongMainSheetProps().id);
+    
+    const longResultsSheet = longSheet.getSheetByName(RESULTS_SHEET_NAME);
+    if (longResultsSheet) longResultsSheet.getRange(1, 1, longResultsSheet.getMaxRows(), longResultsSheet.getMaxColumns()).clear();
+    
+    for (let sheet of longSheet.getSheets()) {
+        if (sheet.getName() == RESULTS_SHEET_NAME) continue;
+        longSheet.deleteSheet(sheet);
+    }
+
+    const shortSheet = SpreadsheetApp.openById(getShortMainSheetProps().id);
+
+    const shortResultsSheet = shortSheet.getSheetByName(RESULTS_SHEET_NAME);
+    if (shortResultsSheet) shortResultsSheet.getRange(1, 1, shortResultsSheet.getMaxRows(), shortResultsSheet.getMaxColumns()).clear();
+    
+    for (let sheet of shortSheet.getSheets()) {
+        if (sheet.getName() == RESULTS_SHEET_NAME) continue;
+        shortSheet.deleteSheet(sheet);
+    }
+
+    setLongMainSheetRaces([]);
+    setShortMainSheetRaces([]);
+}
+
+export { MainSheetProps, clearMainSheetReports, getMainSheetResultsXLSXBlob, removeRace, getTempFolderId, postMainReportToSheet, getMainSheetProps, getLongMainSheetProps, getShortMainSheetProps, placePackagedResultsToTabs, convertToGoogleSheet, packageSeriesGroups, processSeriesGroupsTabs, generateMainReportJSON };

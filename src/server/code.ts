@@ -1,4 +1,4 @@
-import { MainSheetProps, getMainSheetResultsXLSXBlob, generateMainReportJSON, postMainReportToSheet, removeRace, getLongMainSheetProps, getShortMainSheetProps, packageSeriesGroups, placePackagedResultsToTabs, processSeriesGroupsTabs, convertToGoogleSheet } from "./utils/sheetUtils";
+import { MainSheetProps, clearMainSheetReports, getMainSheetResultsXLSXBlob, generateMainReportJSON, postMainReportToSheet, removeRace, getLongMainSheetProps, getShortMainSheetProps, packageSeriesGroups, placePackagedResultsToTabs, processSeriesGroupsTabs, convertToGoogleSheet } from "./utils/sheetUtils";
 import { uploadFile, cleanFiles } from "./utils/fileProcessor";
 
 // @ts-ignore
@@ -81,6 +81,11 @@ global.uploadHandler = (formObject) => {
             throw caughtError;
         }
     }
+};
+
+// @ts-ignore
+global.clearReports = () => {
+    clearMainSheetReports();
 };
 
 // @ts-ignore
