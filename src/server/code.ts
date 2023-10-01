@@ -3,7 +3,18 @@ import { uploadFile, cleanFiles } from "./utils/fileProcessor";
 
 // @ts-ignore
 global.doGet = (e) => {
-    return HtmlService.createHtmlOutputFromFile('dist/index.html').setSandboxMode(HtmlService.SandboxMode.IFRAME).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL).addMetaTag('viewport', 'width=device-width, initial-scale=1').setTitle("DirtySpokesSeriesApp");;
+    const scriptProps = PropertiesService.getScriptProperties();
+
+    const allowedUsers = scriptProps.getProperty('ALLOWED_USER_EMAILS');
+
+    if (!allowedUsers) throw new Error('Invalid Users Property. Please Contact Site Admin.');
+
+    if (allowedUsers.includes(Session.getActiveUser().getEmail())) {
+        return HtmlService.createHtmlOutputFromFile('dist/index.html').setSandboxMode(HtmlService.SandboxMode.IFRAME).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL).addMetaTag('viewport', 'width=device-width, initial-scale=1').setTitle("DirtySpokesSeriesApp");
+    } else {
+        return HtmlService.createHtmlOutput('NO ACCESS');
+    }
+
 };
 
 // @ts-ignore
