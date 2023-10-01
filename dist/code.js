@@ -103,7 +103,9 @@ function test() {}
     };
     // CONCATENATED MODULE: ./src/server/code.ts
     __webpack_require__.g.doGet = function(e) {
-        return HtmlService.createHtmlOutputFromFile("dist/index.html").setSandboxMode(HtmlService.SandboxMode.IFRAME).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL).addMetaTag("viewport", "width=device-width, initial-scale=1").setTitle("DirtySpokesSeriesApp");
+        var allowedUsers = PropertiesService.getScriptProperties().getProperty("ALLOWED_USER_EMAILS");
+        if (!allowedUsers) throw new Error("Invalid Users Property. Please Contact Site Admin.");
+        return allowedUsers.includes(Session.getActiveUser().getEmail()) ? HtmlService.createHtmlOutputFromFile("dist/index.html").setSandboxMode(HtmlService.SandboxMode.IFRAME).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL).addMetaTag("viewport", "width=device-width, initial-scale=1").setTitle("DirtySpokesSeriesApp") : HtmlService.createHtmlOutput("NO ACCESS");
     }, __webpack_require__.g.generateReport = function(formObject) {
         if (!formObject.raceType || "long" != formObject.raceType && "short" != formObject.raceType) throw new Error("Invalid race type selected.");
         var mainSheetProps, raceType = formObject.raceType, numberPerSeries = parseInt(formObject.numberPerSeries), allowedAbsences = parseInt(formObject.allowedAbsences);
