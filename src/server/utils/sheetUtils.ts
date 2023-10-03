@@ -316,7 +316,7 @@ const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainR
 
         seriesArray.push(['', '']); // Spacer to separate series groups
 
-        if (seriesArray.length < 2) {
+        if (seriesArray.length > 2) {
             for (let row of seriesArray) {
                 recordsRangeValues.push(row);
             }
