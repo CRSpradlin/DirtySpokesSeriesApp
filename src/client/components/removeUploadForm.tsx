@@ -1,9 +1,9 @@
 import React from "react";
+import { ChildComponentType } from "./root";
 
-export default class RemoveUploadForm extends React.Component {
+export default class RemoveUploadForm extends React.Component<ChildComponentType> {
 
 	state = {
-		loading: false,
 		racesLoading: true,
 		raceNames: {},
 		selectedRaceType: 'long',
@@ -16,18 +16,18 @@ export default class RemoveUploadForm extends React.Component {
 
 	public handleFailure = (error) => {
 		alert('Error Occured: ' + error.message);
-		this.setState({ 
-			loading: false,
+		this.props.setLoading(false);
+		this.setState({
 			racesLoading: false
-		 });
+		});
 	}
 
 	public setRaceNames = (raceNames) => {
+		this.props.setLoading(false);
 		this.setState({
 			raceNames,
 			selectedRaceType: 'long',
-			racesLoading: false,
-			loading: false 
+			racesLoading: false
 		});
 		this.selectedRaceChanged({ target: { value: 'long' }});
 	};
@@ -54,10 +54,10 @@ export default class RemoveUploadForm extends React.Component {
 
 	public handleSubmit = (e) => {
 		e.preventDefault();
-		this.setState({ 
-			loading: true,
+		this.props.setLoading(true);
+		this.setState({
 			racesLoading: true
-		 });
+		});
 
 		 // @ts-ignore
 		 google.script.run
@@ -87,7 +87,7 @@ export default class RemoveUploadForm extends React.Component {
 						</select>
 					</div>
 					<div className="m-3">
-						<input type="submit" value={this.state.loading?"Removing...":"Submit"} disabled={this.state.loading} className={`w-[10rem] ${this.state.racesLoading ? 'bg-sky-700' : ' bg-sky-500 hover:bg-sky-700'} px-5 py-2 text-sm rounded-full font-semibold text-white`}/>
+						<input type="submit" value={this.props.loading?"Removing...":"Submit"} disabled={this.props.loading} className={`w-[10rem] ${this.state.racesLoading || this.props.loading ? 'bg-sky-700' : ' bg-sky-500 hover:bg-sky-700'} px-5 py-2 text-sm rounded-full font-semibold text-white`}/>
 					</div>
 				</form>
 			</div>

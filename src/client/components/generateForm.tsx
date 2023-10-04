@@ -1,9 +1,9 @@
 import React from "react";
+import { ChildComponentType } from "./root";
 
-export default class GenerateForm extends React.Component {
+export default class GenerateForm extends React.Component<ChildComponentType> {
 
 	state = {
-		loading: false,
         selectedRaceType: 'long'
 	};
 	
@@ -13,9 +13,7 @@ export default class GenerateForm extends React.Component {
 
 	public handleFailure = (error) => {
 		alert('Error Occured: ' + error.message);
-		this.setState({ 
-			loading: false
-		 });
+		this.props.setLoading(false);
 	}
 
 	public successfullyGeneratedReport = (data) => {
@@ -46,16 +44,12 @@ export default class GenerateForm extends React.Component {
 		// Remove link from body
 		document.getElementById('generateForm')?.removeChild(link);
 
-		this.setState({ 
-			loading: false
-		 });
+		this.props.setLoading(false);
 	}
 
 	public handleSubmit = (e) => {
 		e.preventDefault();
-		this.setState({ 
-			loading: true
-		 });
+		this.props.setLoading(true);
 
 		 // @ts-ignore
 		 google.script.run
@@ -85,7 +79,7 @@ export default class GenerateForm extends React.Component {
 						<input name="numberPerSeries" type="number" min="1" max="50" />
 					</div>
 					<div className="m-3">
-						<input type="submit" value={this.state.loading?"Generating...":"Submit"} disabled={this.state.loading} className={`w-[10rem] ${this.state.loading ? 'bg-sky-700' : ' bg-sky-500 hover:bg-sky-700'} px-5 py-2 text-sm rounded-full font-semibold text-white`}/>
+						<input type="submit" value={this.props.loading?"Generating...":"Submit"} disabled={this.props.loading} className={`w-[10rem] ${this.props.loading ? 'bg-sky-700' : ' bg-sky-500 hover:bg-sky-700'} px-5 py-2 text-sm rounded-full font-semibold text-white`}/>
 					</div>
 				</form>
 			</div>
