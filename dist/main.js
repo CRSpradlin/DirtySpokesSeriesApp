@@ -6781,24 +6781,12 @@
         /* harmony default export */ const fileUploadForm = function(_super) {
             function FileUploadForm(props) {
                 var _this = _super.call(this, props) || this;
-                return _this.state = {
-                    loading: !1
-                }, _this.handleSubmit = function(e) {
-                    e.preventDefault(), _this.setState({
-                        loading: !0
-                    }), google.script.run.withSuccessHandler(_this.onSuccessfulFileUpload).withFailureHandler(_this.onFailedUpload).uploadHandler(document.getElementById("uploadForm"));
-                }, _this.handleFileChange = function(e) {
-                    console.log(e.target.files[0]), _this.setState({
-                        excelFile: e.target.files[0]
-                    });
+                return _this.handleSubmit = function(e) {
+                    e.preventDefault(), _this.props.setLoading(!0), google.script.run.withSuccessHandler(_this.onSuccessfulFileUpload).withFailureHandler(_this.onFailedUpload).uploadHandler(document.getElementById("uploadForm"));
                 }, _this.onFailedUpload = function(error) {
-                    alert("Upload Failed: " + error.message), _this.setState({
-                        loading: !1
-                    });
+                    _this.props.setLoading(!1), alert("Upload Failed: " + error.message);
                 }, _this.onSuccessfulFileUpload = function() {
-                    _this.setState({
-                        loading: !1
-                    }), alert("Successfully Uploaded New Race");
+                    _this.props.setLoading(!1), alert("Successfully Uploaded New Race");
                 }, _this;
             }
             return __extends(FileUploadForm, _super), FileUploadForm.prototype.render = function() {
@@ -6819,9 +6807,9 @@
                     className: "m-3"
                 }, react.createElement("input", {
                     type: "submit",
-                    value: this.state.loading ? "Uploading..." : "Submit",
-                    disabled: this.state.loading,
-                    className: "w-[10rem] ".concat(this.state.loading ? "bg-sky-700" : " bg-sky-500 hover:bg-sky-700", " px-5 py-2 text-sm rounded-full font-semibold text-white")
+                    value: this.props.loading ? "Uploading..." : "Submit",
+                    disabled: this.props.loading,
+                    className: "w-[10rem] ".concat(this.props.loading ? "bg-sky-700" : " bg-sky-500 hover:bg-sky-700", " px-5 py-2 text-sm rounded-full font-semibold text-white")
                 }))));
             }, FileUploadForm;
         }(react.Component);
@@ -6849,22 +6837,19 @@
             function RemoveUploadForm(props) {
                 var _this = _super.call(this, props) || this;
                 return _this.state = {
-                    loading: !1,
                     racesLoading: !0,
                     raceNames: {},
                     selectedRaceType: "long",
                     selectedRaceNames: [ "Loading..." ]
                 }, _this.handleFailure = function(error) {
-                    alert("Error Occured: " + error.message), _this.setState({
-                        loading: !1,
+                    alert("Error Occured: " + error.message), _this.props.setLoading(!1), _this.setState({
                         racesLoading: !1
                     });
                 }, _this.setRaceNames = function(raceNames) {
-                    _this.setState({
+                    _this.props.setLoading(!1), _this.setState({
                         raceNames,
                         selectedRaceType: "long",
-                        racesLoading: !1,
-                        loading: !1
+                        racesLoading: !1
                     }), _this.selectedRaceChanged({
                         target: {
                             value: "long"
@@ -6880,8 +6865,7 @@
                 }, _this.componentDidMount = function() {
                     google.script.run.withSuccessHandler(_this.setRaceNames).withFailureHandler(_this.handleFailure).getRaceNames();
                 }, _this.handleSubmit = function(e) {
-                    e.preventDefault(), _this.setState({
-                        loading: !0,
+                    e.preventDefault(), _this.props.setLoading(!0), _this.setState({
                         racesLoading: !0
                     }), google.script.run.withSuccessHandler(_this.successfullyRemovedRace).withFailureHandler(_this.handleFailure).removeRaceHandler(document.getElementById("removeForm"));
                 }, _this;
@@ -6925,9 +6909,9 @@
                     className: "m-3"
                 }, react.createElement("input", {
                     type: "submit",
-                    value: this.state.loading ? "Removing..." : "Submit",
-                    disabled: this.state.loading,
-                    className: "w-[10rem] ".concat(this.state.racesLoading ? "bg-sky-700" : " bg-sky-500 hover:bg-sky-700", " px-5 py-2 text-sm rounded-full font-semibold text-white")
+                    value: this.props.loading ? "Removing..." : "Submit",
+                    disabled: this.props.loading,
+                    className: "w-[10rem] ".concat(this.state.racesLoading || this.props.loading ? "bg-sky-700" : " bg-sky-500 hover:bg-sky-700", " px-5 py-2 text-sm rounded-full font-semibold text-white")
                 }))));
             }, RemoveUploadForm;
         }(react.Component);
@@ -6955,12 +6939,9 @@
             function GenerateForm(props) {
                 var _this = _super.call(this, props) || this;
                 return _this.state = {
-                    loading: !1,
                     selectedRaceType: "long"
                 }, _this.handleFailure = function(error) {
-                    alert("Error Occured: " + error.message), _this.setState({
-                        loading: !1
-                    });
+                    alert("Error Occured: " + error.message), _this.props.setLoading(!1);
                 }, _this.successfullyGeneratedReport = function(data) {
                     var _a, _b, link = document.createElement("a");
                     link.href = data, link.download = "GeneratedReport.xlsx", null === (_a = document.getElementById("generateForm")) || void 0 === _a || _a.appendChild(link), 
@@ -6969,13 +6950,9 @@
                         cancelable: !0,
                         view: window
                     })), null === (_b = document.getElementById("generateForm")) || void 0 === _b || _b.removeChild(link), 
-                    _this.setState({
-                        loading: !1
-                    });
+                    _this.props.setLoading(!1);
                 }, _this.handleSubmit = function(e) {
-                    e.preventDefault(), _this.setState({
-                        loading: !0
-                    }), google.script.run.withSuccessHandler(_this.successfullyGeneratedReport).withFailureHandler(_this.handleFailure).generateReport(document.getElementById("generateForm"));
+                    e.preventDefault(), _this.props.setLoading(!0), google.script.run.withSuccessHandler(_this.successfullyGeneratedReport).withFailureHandler(_this.handleFailure).generateReport(document.getElementById("generateForm"));
                 }, _this;
             }
             return generateForm_extends(GenerateForm, _super), GenerateForm.prototype.render = function() {
@@ -7028,9 +7005,9 @@
                     className: "m-3"
                 }, react.createElement("input", {
                     type: "submit",
-                    value: this.state.loading ? "Generating..." : "Submit",
-                    disabled: this.state.loading,
-                    className: "w-[10rem] ".concat(this.state.loading ? "bg-sky-700" : " bg-sky-500 hover:bg-sky-700", " px-5 py-2 text-sm rounded-full font-semibold text-white")
+                    value: this.props.loading ? "Generating..." : "Submit",
+                    disabled: this.props.loading,
+                    className: "w-[10rem] ".concat(this.props.loading ? "bg-sky-700" : " bg-sky-500 hover:bg-sky-700", " px-5 py-2 text-sm rounded-full font-semibold text-white")
                 }))));
             }, GenerateForm;
         }(react.Component);
@@ -7057,20 +7034,12 @@
         /* harmony default export */ const dangerForm = function(_super) {
             function DangerForm(props) {
                 var _this = _super.call(this, props) || this;
-                return _this.state = {
-                    loading: !1
-                }, _this.handleSuccess = function() {
-                    _this.setState({
-                        loading: !1
-                    }), alert("Successfully Cleared Reports");
+                return _this.handleSuccess = function() {
+                    _this.props.setLoading(!1), alert("Successfully Cleared Reports");
                 }, _this.handleFailure = function(error) {
-                    _this.setState({
-                        loading: !1
-                    }), alert("Error Occured: " + error.message);
+                    _this.props.setLoading(!1), alert("Error Occured: " + error.message);
                 }, _this.handleSubmit = function(e) {
-                    e.preventDefault(), _this.setState({
-                        loading: !0
-                    }), google.script.run.withSuccessHandler(_this.handleSuccess).withFailureHandler(_this.handleFailure).clearReports();
+                    e.preventDefault(), _this.props.setLoading(!0), google.script.run.withSuccessHandler(_this.handleSuccess).withFailureHandler(_this.handleFailure).clearReports();
                 }, _this;
             }
             return dangerForm_extends(DangerForm, _super), DangerForm.prototype.render = function() {
@@ -7085,9 +7054,9 @@
                     className: "m-3"
                 }, react.createElement("input", {
                     type: "submit",
-                    value: this.state.loading ? "Deleting..." : "Delete",
-                    disabled: this.state.loading,
-                    className: "w-[10rem] ".concat(this.state.loading ? "bg-red-700" : " bg-red-500 hover:bg-red-700", " px-5 py-2 text-sm rounded-full font-semibold text-white")
+                    value: this.props.loading ? "Deleting..." : "Delete",
+                    disabled: this.props.loading,
+                    className: "w-[10rem] ".concat(this.props.loading ? "bg-red-700" : " bg-red-500 hover:bg-red-700", " px-5 py-2 text-sm rounded-full font-semibold text-white")
                 }))));
             }, DangerForm;
         }(react.Component);
@@ -7110,48 +7079,24 @@
                 extendStatics(d, b), d.prototype = null === b ? Object.create(b) : (__.prototype = b.prototype, 
                 new __);
             };
-        }();
-        /* harmony default export */ const root = function(_super) {
+        }(), Root = function(_super) {
             function Root(props) {
                 var _this = _super.call(this, props) || this;
                 return _this.state = {
                     activeTabName: "fileUploadForm",
-                    activeTabComponent: react.createElement(fileUploadForm, null)
+                    loading: !1
+                }, _this.componentDidMount = function() {
+                    _this.setLoading = _this.setLoading.bind(_this);
+                }, _this.setLoading = function(value) {
+                    _this.setState({
+                        loading: value
+                    });
                 }, _this;
             }
             return root_extends(Root, _super), Root.prototype.setActiveTab = function(tabName) {
-                switch (tabName) {
-                  case "fileUploadForm":
-                    this.setState({
-                        activeTabName: tabName,
-                        activeTabComponent: react.createElement(fileUploadForm, null)
-                    });
-                    break;
-
-                  case "removeUploadForm":
-                    this.setState({
-                        activeTabName: tabName,
-                        activeTabComponent: react.createElement(removeUploadForm, null)
-                    });
-                    break;
-
-                  case "generateForm":
-                    this.setState({
-                        activeTabName: tabName,
-                        activeTabComponent: react.createElement(generateForm, null)
-                    });
-                    break;
-
-                  case "dangerForm":
-                    this.setState({
-                        activeTabName: tabName,
-                        activeTabComponent: react.createElement(dangerForm, null)
-                    });
-                    break;
-
-                  default:
-                    alert("Tab not found, please try again later");
-                }
+                this.setState({
+                    activeTabName: tabName
+                });
             }, Root.prototype.render = function() {
                 var _this = this;
                 return react.createElement("div", {
@@ -7162,43 +7107,55 @@
                     className: "flex border-b"
                 }, react.createElement("li", {
                     className: "-mb-px mr-1"
-                }, react.createElement("a", {
+                }, react.createElement("button", {
                     className: "bg-white inline-block py-2 px-4 font-semibold ".concat("fileUploadForm" === this.state.activeTabName ? "border-l border-t border-r rounded-t text-blue-700" : "text-gray-400 hover:text-blue-300"),
-                    href: "#",
+                    disabled: this.state.loading,
                     onClick: function() {
                         return _this.setActiveTab("fileUploadForm");
                     }
                 }, "Upload")), react.createElement("li", {
                     className: "mr-1"
-                }, react.createElement("a", {
+                }, react.createElement("button", {
                     className: "bg-white inline-block py-2 px-4 font-semibold ".concat("removeUploadForm" === this.state.activeTabName ? "border-l border-t border-r rounded-t text-blue-700" : "text-gray-400 hover:text-blue-300"),
-                    href: "#",
+                    disabled: this.state.loading,
                     onClick: function() {
                         return _this.setActiveTab("removeUploadForm");
                     }
                 }, "Remove")), react.createElement("li", {
                     className: "mr-1"
-                }, react.createElement("a", {
+                }, react.createElement("button", {
                     className: "bg-white inline-block py-2 px-4 font-semibold ".concat("generateForm" === this.state.activeTabName ? "border-l border-t border-r rounded-t text-blue-700" : "text-gray-400 hover:text-blue-300"),
-                    href: "#",
+                    disabled: this.state.loading,
                     onClick: function() {
                         return _this.setActiveTab("generateForm");
                     }
                 }, "Generate")), react.createElement("li", {
                     className: "mr-1"
-                }, react.createElement("a", {
+                }, react.createElement("button", {
                     className: "bg-white inline-block py-2 px-4 font-semibold ".concat("dangerForm" === this.state.activeTabName ? "border-l border-t border-r rounded-t text-red-700" : "text-gray-400 hover:text-red-300"),
-                    href: "#",
+                    disabled: this.state.loading,
                     onClick: function() {
                         return _this.setActiveTab("dangerForm");
                     }
                 }, "Danger")))), react.createElement("div", {
                     className: "h-full mt-10 flex flex-col text-center"
-                }, this.state.activeTabComponent));
+                }, "fileUploadForm" === this.state.activeTabName ? react.createElement(fileUploadForm, {
+                    loading: this.state.loading,
+                    setLoading: this.setLoading
+                }) : null, "removeUploadForm" === this.state.activeTabName ? react.createElement(removeUploadForm, {
+                    loading: this.state.loading,
+                    setLoading: this.setLoading
+                }) : null, "generateForm" === this.state.activeTabName ? react.createElement(generateForm, {
+                    loading: this.state.loading,
+                    setLoading: this.setLoading
+                }) : null, "dangerForm" === this.state.activeTabName ? react.createElement(dangerForm, {
+                    loading: this.state.loading,
+                    setLoading: this.setLoading
+                }) : null));
             }, Root;
         }(react.Component);
         // CONCATENATED MODULE: ./src/client/index.tsx
-        react_dom.render(react.createElement(root, null), document.getElementById("root"));
+        react_dom.render(react.createElement(Root, null), document.getElementById("root"));
     })();
 })
 /******/ ();
