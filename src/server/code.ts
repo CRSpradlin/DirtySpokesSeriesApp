@@ -22,7 +22,7 @@ global.generateReport = (formObject) => {
     if (!formObject.raceType || (formObject.raceType != 'long' && formObject.raceType != 'short')) throw new Error('Invalid race type selected.');
     const raceType = formObject.raceType;
     const numberPerSeries = parseInt(formObject.numberPerSeries);
-    const allowedAbsences = parseInt(formObject.allowedAbsences);
+    const minReqRaces = parseInt(formObject.minReqRaces);
 
     let mainSheetProps: MainSheetProps;
     if (raceType === 'long')
@@ -31,7 +31,7 @@ global.generateReport = (formObject) => {
         mainSheetProps = getShortMainSheetProps();
 
     const mainReportJSON = generateMainReportJSON(mainSheetProps.id);
-    postMainReportToSheet(mainSheetProps, mainReportJSON, numberPerSeries, allowedAbsences);
+    postMainReportToSheet(mainSheetProps, mainReportJSON, numberPerSeries, minReqRaces);
 
     const blob = getMainSheetResultsXLSXBlob(mainSheetProps);
     
