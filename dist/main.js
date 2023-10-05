@@ -6987,11 +6987,12 @@
                     className: "m-3"
                 }, react.createElement("span", {
                     className: "text-sky-700"
-                }, "Allowed Absences: "), react.createElement("input", {
-                    name: "allowedAbsences",
+                }, "Minimum Number of Race Entries Required: "), react.createElement("input", {
+                    name: "minReqRaces",
                     type: "number",
                     min: "0",
-                    max: "10"
+                    max: "10",
+                    value: "5"
                 })), react.createElement("div", {
                     className: "m-3"
                 }, react.createElement("span", {
@@ -7000,7 +7001,8 @@
                     name: "numberPerSeries",
                     type: "number",
                     min: "1",
-                    max: "50"
+                    max: "50",
+                    value: "50"
                 })), react.createElement("div", {
                     className: "m-3"
                 }, react.createElement("input", {

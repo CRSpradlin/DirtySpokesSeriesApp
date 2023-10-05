@@ -108,17 +108,17 @@ function test() {}
         return allowedUsers.includes(Session.getActiveUser().getEmail()) ? HtmlService.createHtmlOutputFromFile("dist/index.html").setSandboxMode(HtmlService.SandboxMode.IFRAME).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL).addMetaTag("viewport", "width=device-width, initial-scale=1").setTitle("DirtySpokesSeriesApp") : HtmlService.createHtmlOutput("NO ACCESS");
     }, __webpack_require__.g.generateReport = function(formObject) {
         if (!formObject.raceType || "long" != formObject.raceType && "short" != formObject.raceType) throw new Error("Invalid race type selected.");
-        var mainSheetProps, raceType = formObject.raceType, numberPerSeries = parseInt(formObject.numberPerSeries), allowedAbsences = parseInt(formObject.allowedAbsences);
-        !function(mainSheetProps, mainReport, numReportedPerSeriesGroup, allowedAbsences) {
+        var mainSheetProps, raceType = formObject.raceType, numberPerSeries = parseInt(formObject.numberPerSeries), minReqRaces = parseInt(formObject.minReqRaces);
+        !function(mainSheetProps, mainReport, numReportedPerSeriesGroup, minReqRaces) {
             var _a, _b;
-            void 0 === numReportedPerSeriesGroup && (numReportedPerSeriesGroup = 3), void 0 === allowedAbsences && (allowedAbsences = 2);
+            void 0 === numReportedPerSeriesGroup && (numReportedPerSeriesGroup = 3), void 0 === minReqRaces && (minReqRaces = 5);
             var mainSheet = SpreadsheetApp.openById(mainSheetProps.id);
             if (!mainSheet) throw new Error("Cannot open main sheet with id: ".concat(mainSheetProps.id));
             for (var recordsRangeValues = [], _loop_1 = function(seriesGroup) {
                 for (var seriesArray = [ [ seriesGroup, "" ] ], _d = 0, _e = Object.keys(mainReport[seriesGroup]); _d < _e.length; _d++) {
                     var runner = _e[_d];
-                    if (mainSheetProps.raceNames.length > allowedAbsences) {
-                        if (!(mainReport[seriesGroup][runner].totalRaces >= mainSheetProps.raceNames.length - allowedAbsences)) continue;
+                    if (mainSheetProps.raceNames.length >= minReqRaces) {
+                        if (!(mainReport[seriesGroup][runner].totalRaces >= minReqRaces)) continue;
                         seriesArray.push([ mainReport[seriesGroup][runner].name, mainReport[seriesGroup][runner].totalPoints + "" ]);
                     } else seriesArray.push([ mainReport[seriesGroup][runner].name, mainReport[seriesGroup][runner].totalPoints + "" ]);
                 }
@@ -155,7 +155,7 @@ function test() {}
                 }
             }
             return mainReport;
-        }(mainSheetProps.id), numberPerSeries, allowedAbsences);
+        }(mainSheetProps.id), numberPerSeries, minReqRaces);
         var blob = function(mainSheetProps) {
             for (var mainSheetCopy = SpreadsheetApp.openById(mainSheetProps.id).copy("Temp Results Copy"), _i = 0, _a = mainSheetCopy.getSheets(); _i < _a.length; _i++) {
                 var sheet = _a[_i];

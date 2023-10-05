@@ -278,7 +278,7 @@ const generateMainReportJSON = (mainSheetId: string): MainReport => {
     return mainReport;
 };
 
-const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainReport, numReportedPerSeriesGroup = 3, allowedAbsences = 2) => {
+const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainReport, numReportedPerSeriesGroup = 3, minReqRaces = 5) => {
     const mainSheet = SpreadsheetApp.openById(mainSheetProps.id);
 
     if (!mainSheet) throw new Error(`Cannot open main sheet with id: ${mainSheetProps.id}`);
@@ -288,8 +288,8 @@ const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainR
     for (let seriesGroup of Object.keys(mainReport)) {
         const seriesArray = [[seriesGroup, '']];
         for (let runner of Object.keys(mainReport[seriesGroup])) {
-            if (mainSheetProps.raceNames.length > allowedAbsences){
-                if (mainReport[seriesGroup][runner].totalRaces >= (mainSheetProps.raceNames.length - allowedAbsences)) {
+            if (mainSheetProps.raceNames.length >= minReqRaces){
+                if (mainReport[seriesGroup][runner].totalRaces >= minReqRaces) {
                     seriesArray.push([mainReport[seriesGroup][runner].name, mainReport[seriesGroup][runner].totalPoints+'']);
                 } else {
                     continue;
