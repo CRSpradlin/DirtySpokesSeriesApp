@@ -46,7 +46,11 @@ function test() {}
     // ESM COMPAT FLAG
         __webpack_require__.r(__webpack_exports__);
     // CONCATENATED MODULE: ./src/server/utils/sheetUtils.ts
-    var getLongMainSheetProps = function() {
+    var __spreadArray = undefined && undefined.__spreadArray || function(to, from, pack) {
+        if (pack || 2 === arguments.length) for (var ar, i = 0, l = from.length; i < l; i++) !ar && i in from || (ar || (ar = Array.prototype.slice.call(from, 0, i)), 
+        ar[i] = from[i]);
+        return to.concat(ar || Array.prototype.slice.call(from));
+    }, getLongMainSheetProps = function() {
         var props = PropertiesService.getScriptProperties(), id = props.getProperty("MAIN_LONG_SHEET_ID"), raceNamesProp = props.getProperty("MAIN_LONG_SHEET_RACE_NAMES"), raceNames = [];
         if (!raceNamesProp) throw new Error("Could not retrieve Main Long Sheet Race Names");
         if (raceNames = JSON.parse(raceNamesProp), id) return {
@@ -110,30 +114,40 @@ function test() {}
         if (!formObject.raceType || "long" != formObject.raceType && "short" != formObject.raceType) throw new Error("Invalid race type selected.");
         var mainSheetProps, raceType = formObject.raceType, numberPerSeries = parseInt(formObject.numberPerSeries), minReqRaces = parseInt(formObject.minReqRaces);
         !function(mainSheetProps, mainReport, numReportedPerSeriesGroup, minReqRaces) {
-            var _a, _b;
             void 0 === numReportedPerSeriesGroup && (numReportedPerSeriesGroup = 3), void 0 === minReqRaces && (minReqRaces = 5);
             var mainSheet = SpreadsheetApp.openById(mainSheetProps.id);
             if (!mainSheet) throw new Error("Cannot open main sheet with id: ".concat(mainSheetProps.id));
-            for (var recordsRangeValues = [], _loop_1 = function(seriesGroup) {
-                for (var seriesArray = [ [ seriesGroup, "" ] ], _d = 0, _e = Object.keys(mainReport[seriesGroup]); _d < _e.length; _d++) {
-                    var runner = _e[_d];
+            var mainResultsSheet = mainSheet.getSheetByName("Results");
+            if (!mainResultsSheet) throw new Error('Cannot open "Results" sheet within sheet id: '.concat(mainSheetProps.id));
+            for (var recordsRangeValues = [ __spreadArray(__spreadArray([ "Age Group", "Name" ], mainSheetProps.raceNames, !0), [ "Total Points" ], !1) ], _i = 0, _a = Object.keys(mainReport); _i < _a.length; _i++) {
+                for (var seriesGroup = _a[_i], seriesArray = [], _b = 0, _c = Object.keys(mainReport[seriesGroup]); _b < _c.length; _b++) {
+                    var runner = _c[_b];
                     if (mainSheetProps.raceNames.length >= minReqRaces) {
                         if (!(mainReport[seriesGroup][runner].totalRaces >= minReqRaces)) continue;
-                        seriesArray.push([ mainReport[seriesGroup][runner].name, mainReport[seriesGroup][runner].totalPoints + "" ]);
-                    } else seriesArray.push([ mainReport[seriesGroup][runner].name, mainReport[seriesGroup][runner].totalPoints + "" ]);
+                        (runnerArray = new Array(mainSheetProps.raceNames.length + 3).fill(""))[0] = seriesGroup, 
+                        runnerArray[1] = mainReport[seriesGroup][runner].name, runnerArray[runnerArray.length - 1] = mainReport[seriesGroup][runner].totalPoints + "";
+                        for (var i = 0; i < mainSheetProps.raceNames.length; i++) runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] + "";
+                        seriesArray.push(runnerArray);
+                    } else {
+                        var runnerArray;
+                        for ((runnerArray = new Array(mainSheetProps.raceNames.length + 3).fill(""))[0] = seriesGroup, 
+                        runnerArray[1] = mainReport[seriesGroup][runner].name, runnerArray[runnerArray.length - 1] = mainReport[seriesGroup][runner].totalPoints + "", 
+                        i = 0; i < mainSheetProps.raceNames.length; i++) mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] ? runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] + "" : runnerArray[i + 2] = "0";
+                        seriesArray.push(runnerArray);
+                    }
                 }
                 seriesArray.sort((function(a, b) {
-                    return a[0] == seriesGroup ? -1 : parseInt(a[1]) < parseInt(b[1]) ? 1 : parseInt(a[1]) > parseInt(b[1]) ? -1 : 0;
+                    var totalIndex = mainSheetProps.raceNames.length + 2;
+                    return parseInt(a[totalIndex]) < parseInt(b[totalIndex]) ? 1 : parseInt(a[totalIndex]) > parseInt(b[totalIndex]) ? -1 : 0;
                 }));
-                var numRunnersOverReportLimit = seriesArray.length - 1 - numReportedPerSeriesGroup;
-                if (numRunnersOverReportLimit > 0) for (var i = 0; i < numRunnersOverReportLimit; i++) seriesArray.pop();
-                if (seriesArray.push([ "", "" ]), seriesArray.length > 2) for (var _f = 0, seriesArray_1 = seriesArray; _f < seriesArray_1.length; _f++) {
-                    var row = seriesArray_1[_f];
+                var numRunnersOverReportLimit = seriesArray.length - numReportedPerSeriesGroup;
+                if (numRunnersOverReportLimit > 0) for (i = 0; i < numRunnersOverReportLimit; i++) seriesArray.pop();
+                if (seriesArray.push(new Array(mainSheetProps.raceNames.length + 3).fill("")), seriesArray.length > 1) for (var _d = 0, seriesArray_1 = seriesArray; _d < seriesArray_1.length; _d++) {
+                    var row = seriesArray_1[_d];
                     recordsRangeValues.push(row);
                 }
-            }, _i = 0, _c = Object.keys(mainReport); _i < _c.length; _i++) _loop_1(_c[_i]);
-            null === (_a = mainSheet.getSheetByName("Results")) || void 0 === _a || _a.clear(), 
-            null === (_b = mainSheet.getSheetByName("Results")) || void 0 === _b || _b.getRange(1, 1, recordsRangeValues.length, 2).setValues(recordsRangeValues);
+            }
+            mainResultsSheet.clear(), mainResultsSheet.getRange(1, 1, recordsRangeValues.length, mainSheetProps.raceNames.length + 3).setValues(recordsRangeValues);
         }(mainSheetProps = "long" === raceType ? getLongMainSheetProps() : getShortMainSheetProps(), function(mainSheetId) {
             var mainSheet = SpreadsheetApp.openById(mainSheetId);
             if (!mainSheet) throw new Error("Cannot open main sheet with id: ".concat(mainSheetId));
@@ -145,11 +159,13 @@ function test() {}
                         var record = seriesGroupRange_1[_a];
                         if ("Runner Id" !== record[0] && "" !== record[0].trim()) {
                             var mainReportForRunner = mainReport[seriesGroup][record[0]];
-                            mainReportForRunner ? (mainReportForRunner.totalPoints += parseInt(record[1]), mainReportForRunner.totalRaces += 1) : mainReport[seriesGroup][record[0]] = {
+                            mainReportForRunner ? (mainReportForRunner.races[record[2]] = parseInt(record[1]), 
+                            mainReportForRunner.totalPoints += parseInt(record[1]), mainReportForRunner.totalRaces += 1) : (mainReport[seriesGroup][record[0]] = {
+                                races: {},
                                 name: record[4],
                                 totalPoints: parseInt(record[1]),
                                 totalRaces: 1
-                            };
+                            }, mainReport[seriesGroup][record[0]].races[record[2]] = parseInt(record[1]));
                         }
                     }
                 }
