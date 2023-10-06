@@ -9,7 +9,10 @@ type MainReport = {
         [key: string]: {
             name: string,
             totalPoints: number,
-            totalRaces: number
+            totalRaces: number,
+            races: {
+                [key: string]: number
+            }
         }
     }
 };
@@ -263,14 +266,17 @@ const generateMainReportJSON = (mainSheetId: string): MainReport => {
 
             const mainReportForRunner = mainReport[seriesGroup][record[0]];
             if (mainReportForRunner) {
+                mainReportForRunner.races[record[2]] = parseInt(record[1]);
                 mainReportForRunner.totalPoints += parseInt(record[1]);
                 mainReportForRunner.totalRaces += 1;
             } else {
                 mainReport[seriesGroup][record[0]] = {
+                    races: { },
                     name: record[4],
                     totalPoints: parseInt(record[1]),
                     totalRaces: 1
                 }
+                mainReport[seriesGroup][record[0]].races[record[2]] = parseInt(record[1]);
             }
         }
     }
@@ -280,51 +286,70 @@ const generateMainReportJSON = (mainSheetId: string): MainReport => {
 
 const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainReport, numReportedPerSeriesGroup = 3, minReqRaces = 5) => {
     const mainSheet = SpreadsheetApp.openById(mainSheetProps.id);
-
     if (!mainSheet) throw new Error(`Cannot open main sheet with id: ${mainSheetProps.id}`);
 
-    let recordsRangeValues: string[][] = [];
+    const mainResultsSheet = mainSheet.getSheetByName(RESULTS_SHEET_NAME);
+    if (!mainResultsSheet) throw new Error(`Cannot open "Results" sheet within sheet id: ${mainSheetProps.id}`);
+
+    let recordsRangeValues: string[][] = [['Age Group', 'Name', ...mainSheetProps.raceNames, 'Total Points']];
 
     for (let seriesGroup of Object.keys(mainReport)) {
-        const seriesArray = [[seriesGroup, '']];
+        const seriesArray: string[][] = [];
         for (let runner of Object.keys(mainReport[seriesGroup])) {
             if (mainSheetProps.raceNames.length >= minReqRaces){
                 if (mainReport[seriesGroup][runner].totalRaces >= minReqRaces) {
-                    seriesArray.push([mainReport[seriesGroup][runner].name, mainReport[seriesGroup][runner].totalPoints+'']);
+                    const runnerArray = new Array<string>(mainSheetProps.raceNames.length + 3).fill('');
+                    runnerArray[0] = seriesGroup;
+                    runnerArray[1] = mainReport[seriesGroup][runner].name;
+                    runnerArray[runnerArray.length-1] = mainReport[seriesGroup][runner].totalPoints + '';
+                    for (let i=0; i<mainSheetProps.raceNames.length; i++) {
+                        runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] + '';
+                    }
+                    seriesArray.push(runnerArray);
                 } else {
                     continue;
                 }
                 
             } else {
-                seriesArray.push([mainReport[seriesGroup][runner].name, mainReport[seriesGroup][runner].totalPoints+'']);
+                const runnerArray = new Array<string>(mainSheetProps.raceNames.length + 3).fill('');
+                runnerArray[0] = seriesGroup;
+                runnerArray[1] = mainReport[seriesGroup][runner].name;
+                runnerArray[runnerArray.length-1] = mainReport[seriesGroup][runner].totalPoints + '';
+                for (let i=0; i<mainSheetProps.raceNames.length; i++) {
+                    if (mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]])
+                        runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] + '';
+                    else
+                        runnerArray[i + 2] = '0';
+                }
+                seriesArray.push(runnerArray);
             }
             
         }
 
         seriesArray.sort((a, b) => {
-            if (a[0] == seriesGroup) return -1;
-            else if (parseInt(a[1]) < parseInt(b[1])) return 1;
-            else if (parseInt(a[1]) > parseInt(b[1])) return -1;
+            const totalIndex = mainSheetProps.raceNames.length + 2;
+            if (parseInt(a[totalIndex]) < parseInt(b[totalIndex])) return 1;
+            else if (parseInt(a[totalIndex]) > parseInt(b[totalIndex])) return -1;
             else return 0;
         });
 
-        const numRunnersOverReportLimit = (seriesArray.length-1) - numReportedPerSeriesGroup; // Plus 1 for Series Group Names
+        const numRunnersOverReportLimit = seriesArray.length - numReportedPerSeriesGroup; // Plus 1 for Series Group Names
         if (numRunnersOverReportLimit > 0) {
             for (let i=0; i<numRunnersOverReportLimit; i++)
                 seriesArray.pop();
         }
 
-        seriesArray.push(['', '']); // Spacer to separate series groups
+        seriesArray.push(new Array<string>(mainSheetProps.raceNames.length + 3).fill('')); // Spacer to separate series groups
 
-        if (seriesArray.length > 2) {
+        if (seriesArray.length > 1) {
             for (let row of seriesArray) {
                 recordsRangeValues.push(row);
             }
         }
     }
 
-    mainSheet.getSheetByName(RESULTS_SHEET_NAME)?.clear();
-    mainSheet.getSheetByName(RESULTS_SHEET_NAME)?.getRange(1, 1, recordsRangeValues.length, 2).setValues(recordsRangeValues);
+    mainResultsSheet.clear();
+    mainResultsSheet.getRange(1, 1, recordsRangeValues.length, mainSheetProps.raceNames.length + 3).setValues(recordsRangeValues);
 };
 
 const removeRace = (mainSheetProps: MainSheetProps, raceName: string) => {
