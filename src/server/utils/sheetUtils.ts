@@ -394,6 +394,8 @@ const getMainSheetResultsXLSXBlob = (mainSheetProps: MainSheetProps) => {
     const mainSheet = SpreadsheetApp.openById(mainSheetProps.id);
 
     const mainSheetCopy = mainSheet.copy('Temp Results Copy');
+    DriveApp.getFileById(mainSheetCopy.getId()).moveTo(DriveApp.getFolderById(getTempFolderId()));
+
     for (let sheet of mainSheetCopy.getSheets()) {
         if (sheet.getName() != RESULTS_SHEET_NAME)
             mainSheetCopy.deleteSheet(sheet);
@@ -409,6 +411,8 @@ const getMainSheetResultsXLSXBlob = (mainSheetProps: MainSheetProps) => {
 
     // @ts-ignore
     const blob = UrlFetchApp.fetch(url, params).getBlob();
+
+    DriveApp.getFileById(mainSheetCopy.getId()).setTrashed(true);
 
     blob.setName("GeneratedReport.xlsx");
 
