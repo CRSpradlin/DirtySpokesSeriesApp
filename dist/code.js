@@ -173,7 +173,9 @@ function test() {}
             return mainReport;
         }(mainSheetProps.id), numberPerSeries, minReqRaces);
         var blob = function(mainSheetProps) {
-            for (var mainSheetCopy = SpreadsheetApp.openById(mainSheetProps.id).copy("Temp Results Copy"), _i = 0, _a = mainSheetCopy.getSheets(); _i < _a.length; _i++) {
+            var mainSheetCopy = SpreadsheetApp.openById(mainSheetProps.id).copy("Temp Results Copy");
+            DriveApp.getFileById(mainSheetCopy.getId()).moveTo(DriveApp.getFolderById(getTempFolderId()));
+            for (var _i = 0, _a = mainSheetCopy.getSheets(); _i < _a.length; _i++) {
                 var sheet = _a[_i];
                 "Results" != sheet.getName() && mainSheetCopy.deleteSheet(sheet);
             }
@@ -184,7 +186,8 @@ function test() {}
                 },
                 muteHttpExceptions: !0
             }, blob = UrlFetchApp.fetch(url, params).getBlob();
-            return blob.setName("GeneratedReport.xlsx"), blob;
+            return DriveApp.getFileById(mainSheetCopy.getId()).setTrashed(!0), blob.setName("GeneratedReport.xlsx"), 
+            blob;
         }(mainSheetProps);
         return "data:".concat(MimeType.MICROSOFT_EXCEL, ";base64,") + Utilities.base64Encode(blob.getBytes());
     }, __webpack_require__.g.removeRaceHandler = function(formObject) {
