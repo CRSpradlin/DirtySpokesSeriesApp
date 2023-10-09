@@ -6939,7 +6939,9 @@
             function GenerateForm(props) {
                 var _this = _super.call(this, props) || this;
                 return _this.state = {
-                    selectedRaceType: "long"
+                    selectedRaceType: "long",
+                    minReqRaces: 5,
+                    numberPerSeries: 50
                 }, _this.handleFailure = function(error) {
                     alert("Error Occured: " + error.message), _this.props.setLoading(!1);
                 }, _this.successfullyGeneratedReport = function(data) {
@@ -6992,7 +6994,12 @@
                     type: "number",
                     min: "0",
                     max: "10",
-                    value: "5"
+                    value: this.state.minReqRaces,
+                    onChange: function(e) {
+                        return _this.setState({
+                            minReqRaces: e.target.value
+                        });
+                    }
                 })), react.createElement("div", {
                     className: "m-3"
                 }, react.createElement("span", {
@@ -7002,7 +7009,12 @@
                     type: "number",
                     min: "1",
                     max: "50",
-                    value: "50"
+                    value: this.state.numberPerSeries,
+                    onChange: function(e) {
+                        return _this.setState({
+                            numberPerSeries: e.target.value
+                        });
+                    }
                 })), react.createElement("div", {
                     className: "m-3"
                 }, react.createElement("input", {
