@@ -303,7 +303,10 @@ const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainR
                     runnerArray[1] = mainReport[seriesGroup][runner].name;
                     runnerArray[runnerArray.length-1] = mainReport[seriesGroup][runner].totalPoints + '';
                     for (let i=0; i<mainSheetProps.raceNames.length; i++) {
-                        runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] + '';
+                        if (mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]])
+                            runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] + '';
+                        else
+                            runnerArray[i + 2] = '0';
                     }
                     seriesArray.push(runnerArray);
                 } else {
