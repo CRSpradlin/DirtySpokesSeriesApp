@@ -4,7 +4,9 @@ import { ChildComponentType } from "./root";
 export default class GenerateForm extends React.Component<ChildComponentType> {
 
 	state = {
-        selectedRaceType: 'long'
+        selectedRaceType: 'long',
+		minReqRaces: 5,
+		numberPerSeries: 50
 	};
 	
 	constructor(props) {
@@ -72,11 +74,11 @@ export default class GenerateForm extends React.Component<ChildComponentType> {
 					</div>
                     <div className="m-3">
 						<span className="text-sky-700">Minimum Number of Race Entries Required: </span>
-						<input name="minReqRaces" type="number" min="0" max="10" value="5" />
+						<input name="minReqRaces" type="number" min="0" max="10" value={this.state.minReqRaces} onChange={e => this.setState({ minReqRaces: e.target.value })} />
 					</div>
                     <div className="m-3">
 						<span className="text-sky-700">Number per Series: </span>
-						<input name="numberPerSeries" type="number" min="1" max="50" value="50" />
+						<input name="numberPerSeries" type="number" min="1" max="50" value={this.state.numberPerSeries} onChange={e => this.setState({ numberPerSeries: e.target.value })} />
 					</div>
 					<div className="m-3">
 						<input type="submit" value={this.props.loading?"Generating...":"Submit"} disabled={this.props.loading} className={`w-[10rem] ${this.props.loading ? 'bg-sky-700' : ' bg-sky-500 hover:bg-sky-700'} px-5 py-2 text-sm rounded-full font-semibold text-white`}/>
