@@ -126,7 +126,7 @@ function test() {}
                         if (!(mainReport[seriesGroup][runner].totalRaces >= minReqRaces)) continue;
                         (runnerArray = new Array(mainSheetProps.raceNames.length + 3).fill(""))[0] = seriesGroup, 
                         runnerArray[1] = mainReport[seriesGroup][runner].name, runnerArray[runnerArray.length - 1] = mainReport[seriesGroup][runner].totalPoints + "";
-                        for (var i = 0; i < mainSheetProps.raceNames.length; i++) runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] + "";
+                        for (var i = 0; i < mainSheetProps.raceNames.length; i++) mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] ? runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] + "" : runnerArray[i + 2] = "0";
                         seriesArray.push(runnerArray);
                     } else {
                         var runnerArray;
