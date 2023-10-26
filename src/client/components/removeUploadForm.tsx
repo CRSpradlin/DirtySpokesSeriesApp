@@ -69,17 +69,17 @@ export default class RemoveUploadForm extends React.Component<ChildComponentType
 	public render() {
 		return (
 			<div className="content-center">
-				<span className="text-sky-700 text-lg p-6">Select Race Type and Race Name to Remove</span>
+				<span className="text-dirtyspokes-dark text-lg p-6">Select Race Type and Race Name to Remove</span>
 				<form id="removeForm" onSubmit={this.handleSubmit}>
 					<div className="m-3">
-						<span className="text-sky-700">Race Type: </span>
+						<span className="text-dirtyspokes-dark">Race Type: </span>
 						<select name="raceType" value={this.state.selectedRaceType} id="raceType" onChange={this.selectedRaceChanged}>
 							<option key="0" value="long">Long Course</option>
 							<option key="1" value="short">Short Course</option>
 						</select>
 					</div>
 					<div className="m-3">
-						<span className="text-sky-700">Race Name: </span>
+						<span className="text-dirtyspokes-dark">Race Name: </span>
 						<select name="raceName" disabled={this.state.racesLoading}>
 							{this.state.selectedRaceNames.map((option, index) => (
 								<option key={index} value={option}>{option}</option>
@@ -87,7 +87,7 @@ export default class RemoveUploadForm extends React.Component<ChildComponentType
 						</select>
 					</div>
 					<div className="m-3">
-						<input type="submit" value={this.props.loading?"Removing...":"Submit"} disabled={this.props.loading} className={`w-[10rem] ${this.state.racesLoading || this.props.loading ? 'bg-sky-700' : ' bg-sky-500 hover:bg-sky-700'} px-5 py-2 text-sm rounded-full font-semibold text-white`}/>
+						<input type="submit" value={this.props.loading?"Removing...":"Submit"} disabled={this.props.loading} className={`w-[10rem] ${this.state.racesLoading || this.props.loading ? 'bg-dirtyspokes-dark' : ' bg-dirtyspokes-light hover:bg-dirtyspokes-dark'} px-5 py-2 text-sm rounded-full font-semibold text-white`}/>
 					</div>
 				</form>
 			</div>
