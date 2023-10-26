@@ -62,8 +62,8 @@ global.removeRaceHandler = (formObject) => {
 // @ts-ignore
 global.getRaceNames = () => {
     return {
-        'long': getLongMainSheetProps().raceNames,
-        'short': getShortMainSheetProps().raceNames
+        'long': getLongMainSheetProps().races.map((race) => race.raceName),
+        'short': getShortMainSheetProps().races.map((race) => race.raceName)
     }
 };
 

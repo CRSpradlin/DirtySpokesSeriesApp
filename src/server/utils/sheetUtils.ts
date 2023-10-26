@@ -1,7 +1,13 @@
 type PackagedResults = {
     fileName: string,
     raceName: string,
+    raceDate: string,
     seriesResults: { [key: string]: string[][] }
+};
+
+type RacesArrayItem = {
+    raceName: string,
+    date: number
 };
 
 type MainReport = {
@@ -20,20 +26,26 @@ type MainReport = {
 type MainSheetProps = {
     raceType: 'long' | 'short',
     id: string,
-    raceNames: string[]
+    races: RacesArrayItem[]
 };
 
 const RESULTS_SHEET_NAME = 'Results';
 
+const raceArrayItemSort = (a, b) => {
+    if (parseInt(a.date) < parseInt(b.date)) return -1;
+    else if (parseInt(a.date) > parseInt(b.date)) return 1;
+    else return 0;
+}
+
 const getLongMainSheetProps = (): MainSheetProps => {
     const props = PropertiesService.getScriptProperties();
     const id = props.getProperty('MAIN_LONG_SHEET_ID');
-    const raceNamesProp = props.getProperty('MAIN_LONG_SHEET_RACE_NAMES');
+    const racesProp = props.getProperty('MAIN_LONG_SHEET_RACE_NAMES');
 
-    let raceNames: string[] = [];
+    let races: RacesArrayItem[] = [];
 
-    if (raceNamesProp) {
-        raceNames = JSON.parse(raceNamesProp);
+    if (racesProp) {
+        races = JSON.parse(racesProp);
     } else {
         throw new Error('Could not retrieve Main Long Sheet Race Names');
     }
@@ -42,14 +54,15 @@ const getLongMainSheetProps = (): MainSheetProps => {
         return {
             raceType: 'long',
             id,
-            raceNames
+            races
         };
     } else {
         throw new Error('Could not retrieve Main Long Sheet ID and Race Count');
     }
 };
 
-const setLongMainSheetRaces = (newRaces: string[]) => {
+const setLongMainSheetRaces = (newRaces: RacesArrayItem[]) => {
+    newRaces.sort(raceArrayItemSort);
     const props = PropertiesService.getScriptProperties();
     props.setProperty('MAIN_LONG_SHEET_RACE_NAMES', JSON.stringify(newRaces));
 };
@@ -57,12 +70,12 @@ const setLongMainSheetRaces = (newRaces: string[]) => {
 const getShortMainSheetProps = (): MainSheetProps => {
     const props = PropertiesService.getScriptProperties();
     const id = props.getProperty('MAIN_SHORT_SHEET_ID');
-    const raceNamesProp = props.getProperty('MAIN_SHORT_SHEET_RACE_NAMES');
+    const racesProp = props.getProperty('MAIN_SHORT_SHEET_RACE_NAMES');
 
-    let raceNames: string[] = [];
+    let races: RacesArrayItem[] = [];
 
-    if (raceNamesProp) {
-        raceNames = JSON.parse(raceNamesProp);
+    if (racesProp) {
+        races = JSON.parse(racesProp);
     } else {
         throw new Error('Could not retrieve Main Short Sheet Race Names');
     }
@@ -71,19 +84,20 @@ const getShortMainSheetProps = (): MainSheetProps => {
         return {
             raceType: 'short',
             id,
-            raceNames
+            races
         };
     } else {
         throw new Error('Could not retrieve Main Short Sheet ID');
     }
 };
 
-const setShortMainSheetRaces = (newRaces: string[]) => {
+const setShortMainSheetRaces = (newRaces: RacesArrayItem[]) => {
+    newRaces.sort(raceArrayItemSort);
     const props = PropertiesService.getScriptProperties();
     props.setProperty('MAIN_SHORT_SHEET_RACE_NAMES', JSON.stringify(newRaces));
 };
 
-const setMainSheetRaceNames = (packagedResults: PackagedResults, newRaces: string[]) => {
+const setMainSheetRaces = (packagedResults: PackagedResults, newRaces: RacesArrayItem[]) => {
     if (packagedResults.fileName.toLowerCase().includes('short')) {
         setShortMainSheetRaces(newRaces);
     } else if (packagedResults.fileName.toLowerCase().includes('long')) {
@@ -145,6 +159,7 @@ const packageSeriesGroups = (documentId: string): PackagedResults => {
     const packagedResults = {
         fileName: uploadedSheet.getName(),
         raceName: rangeData[1][0],
+        raceDate: rangeData[3][0],
         seriesResults: {}
     };
 
@@ -211,11 +226,12 @@ const placePackagedResultsToTabs = (packagedResults: PackagedResults) => {
     const mainSheet = SpreadsheetApp.openById(mainSheetProps.id);
     const uploadedFileName = packagedResults.fileName;
     const raceName = packagedResults.raceName;
+    const raceDate = packagedResults.raceDate;
 
-    if (mainSheetProps.raceNames.includes(raceName)) {
+    if (mainSheetProps.races.map((race) => race.raceName).includes(raceName)) {
         throw new Error('Race has already been added. Please remove it before adding it again.');
     } else {
-        mainSheetProps.raceNames.push(raceName);
+        mainSheetProps.races.push({raceName, date: new Date(raceDate).getTime()});
     }
 
     for (const seriesGroup of Object.keys(packagedResults.seriesResults)) {
@@ -234,7 +250,7 @@ const placePackagedResultsToTabs = (packagedResults: PackagedResults) => {
         }
     }
 
-   setMainSheetRaceNames(packagedResults, mainSheetProps.raceNames); 
+   setMainSheetRaces(packagedResults, mainSheetProps.races); 
 };
 
 const getNextOpenRowInSeriesSheet = (seriesSheet: GoogleAppsScript.Spreadsheet.Sheet) => {
@@ -291,20 +307,20 @@ const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainR
     const mainResultsSheet = mainSheet.getSheetByName(RESULTS_SHEET_NAME);
     if (!mainResultsSheet) throw new Error(`Cannot open "Results" sheet within sheet id: ${mainSheetProps.id}`);
 
-    let recordsRangeValues: string[][] = [['Age Group', 'Name', ...mainSheetProps.raceNames, 'Total Points']];
+    let recordsRangeValues: string[][] = [['Age Group', 'Name', ...mainSheetProps.races.map((race) => race.raceName), 'Total Points']];
 
     for (let seriesGroup of Object.keys(mainReport)) {
         const seriesArray: string[][] = [];
         for (let runner of Object.keys(mainReport[seriesGroup])) {
-            if (mainSheetProps.raceNames.length >= minReqRaces){
+            if (mainSheetProps.races.length >= minReqRaces){
                 if (mainReport[seriesGroup][runner].totalRaces >= minReqRaces) {
-                    const runnerArray = new Array<string>(mainSheetProps.raceNames.length + 3).fill('');
+                    const runnerArray = new Array<string>(mainSheetProps.races.length + 3).fill('');
                     runnerArray[0] = seriesGroup;
                     runnerArray[1] = mainReport[seriesGroup][runner].name;
                     runnerArray[runnerArray.length-1] = mainReport[seriesGroup][runner].totalPoints + '';
-                    for (let i=0; i<mainSheetProps.raceNames.length; i++) {
-                        if (mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]])
-                            runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] + '';
+                    for (let i=0; i<mainSheetProps.races.length; i++) {
+                        if (mainReport[seriesGroup][runner].races[mainSheetProps.races[i].raceName])
+                            runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.races[i].raceName] + '';
                         else
                             runnerArray[i + 2] = '0';
                     }
@@ -314,13 +330,13 @@ const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainR
                 }
                 
             } else {
-                const runnerArray = new Array<string>(mainSheetProps.raceNames.length + 3).fill('');
+                const runnerArray = new Array<string>(mainSheetProps.races.length + 3).fill('');
                 runnerArray[0] = seriesGroup;
                 runnerArray[1] = mainReport[seriesGroup][runner].name;
                 runnerArray[runnerArray.length-1] = mainReport[seriesGroup][runner].totalPoints + '';
-                for (let i=0; i<mainSheetProps.raceNames.length; i++) {
-                    if (mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]])
-                        runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] + '';
+                for (let i=0; i<mainSheetProps.races.length; i++) {
+                    if (mainReport[seriesGroup][runner].races[mainSheetProps.races[i].raceName])
+                        runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.races[i].raceName] + '';
                     else
                         runnerArray[i + 2] = '0';
                 }
@@ -330,7 +346,7 @@ const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainR
         }
 
         seriesArray.sort((a, b) => {
-            const totalIndex = mainSheetProps.raceNames.length + 2;
+            const totalIndex = mainSheetProps.races.length + 2;
             if (parseInt(a[totalIndex]) < parseInt(b[totalIndex])) return 1;
             else if (parseInt(a[totalIndex]) > parseInt(b[totalIndex])) return -1;
             else return 0;
@@ -342,7 +358,7 @@ const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainR
                 seriesArray.pop();
         }
 
-        seriesArray.push(new Array<string>(mainSheetProps.raceNames.length + 3).fill('')); // Spacer to separate series groups
+        seriesArray.push(new Array<string>(mainSheetProps.races.length + 3).fill('')); // Spacer to separate series groups
 
         if (seriesArray.length > 1) {
             for (let row of seriesArray) {
@@ -352,11 +368,11 @@ const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainR
     }
 
     mainResultsSheet.clear();
-    mainResultsSheet.getRange(1, 1, recordsRangeValues.length, mainSheetProps.raceNames.length + 3).setValues(recordsRangeValues);
+    mainResultsSheet.getRange(1, 1, recordsRangeValues.length, mainSheetProps.races.length + 3).setValues(recordsRangeValues);
 };
 
 const removeRace = (mainSheetProps: MainSheetProps, raceName: string) => {
-    if (!mainSheetProps.raceNames.includes(raceName)) 
+    if (!mainSheetProps.races.map((race) => race.raceName).includes(raceName)) 
         throw new Error(`Could not find race: "${raceName}" to remove.`);
 
     const mainSheet = SpreadsheetApp.openById(mainSheetProps.id);
@@ -384,11 +400,11 @@ const removeRace = (mainSheetProps: MainSheetProps, raceName: string) => {
     if (failedSheets.length > 0) {
         throw new Error(`Failed to remove race for seriesGroups: ${failedSheets.join(', ')}`);
     } else {
-        mainSheetProps.raceNames.splice(mainSheetProps.raceNames.indexOf(raceName), 1);
+        mainSheetProps.races.splice(mainSheetProps.races.map((race) => race.raceName).indexOf(raceName), 1);
         if (mainSheetProps.raceType === 'long') {
-            setLongMainSheetRaces(mainSheetProps.raceNames);
+            setLongMainSheetRaces(mainSheetProps.races);
         } else {
-            setShortMainSheetRaces(mainSheetProps.raceNames);
+            setShortMainSheetRaces(mainSheetProps.races);
         }
     }
 }
