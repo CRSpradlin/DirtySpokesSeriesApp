@@ -50,28 +50,30 @@ function test() {}
         if (pack || 2 === arguments.length) for (var ar, i = 0, l = from.length; i < l; i++) !ar && i in from || (ar || (ar = Array.prototype.slice.call(from, 0, i)), 
         ar[i] = from[i]);
         return to.concat(ar || Array.prototype.slice.call(from));
+    }, raceArrayItemSort = function(a, b) {
+        return parseInt(a.date) < parseInt(b.date) ? -1 : parseInt(a.date) > parseInt(b.date) ? 1 : 0;
     }, getLongMainSheetProps = function() {
-        var props = PropertiesService.getScriptProperties(), id = props.getProperty("MAIN_LONG_SHEET_ID"), raceNamesProp = props.getProperty("MAIN_LONG_SHEET_RACE_NAMES"), raceNames = [];
-        if (!raceNamesProp) throw new Error("Could not retrieve Main Long Sheet Race Names");
-        if (raceNames = JSON.parse(raceNamesProp), id) return {
+        var props = PropertiesService.getScriptProperties(), id = props.getProperty("MAIN_LONG_SHEET_ID"), racesProp = props.getProperty("MAIN_LONG_SHEET_RACE_NAMES"), races = [];
+        if (!racesProp) throw new Error("Could not retrieve Main Long Sheet Race Names");
+        if (races = JSON.parse(racesProp), id) return {
             raceType: "long",
             id,
-            raceNames
+            races
         };
         throw new Error("Could not retrieve Main Long Sheet ID and Race Count");
     }, setLongMainSheetRaces = function(newRaces) {
-        PropertiesService.getScriptProperties().setProperty("MAIN_LONG_SHEET_RACE_NAMES", JSON.stringify(newRaces));
+        newRaces.sort(raceArrayItemSort), PropertiesService.getScriptProperties().setProperty("MAIN_LONG_SHEET_RACE_NAMES", JSON.stringify(newRaces));
     }, getShortMainSheetProps = function() {
-        var props = PropertiesService.getScriptProperties(), id = props.getProperty("MAIN_SHORT_SHEET_ID"), raceNamesProp = props.getProperty("MAIN_SHORT_SHEET_RACE_NAMES"), raceNames = [];
-        if (!raceNamesProp) throw new Error("Could not retrieve Main Short Sheet Race Names");
-        if (raceNames = JSON.parse(raceNamesProp), id) return {
+        var props = PropertiesService.getScriptProperties(), id = props.getProperty("MAIN_SHORT_SHEET_ID"), racesProp = props.getProperty("MAIN_SHORT_SHEET_RACE_NAMES"), races = [];
+        if (!racesProp) throw new Error("Could not retrieve Main Short Sheet Race Names");
+        if (races = JSON.parse(racesProp), id) return {
             raceType: "short",
             id,
-            raceNames
+            races
         };
         throw new Error("Could not retrieve Main Short Sheet ID");
     }, setShortMainSheetRaces = function(newRaces) {
-        PropertiesService.getScriptProperties().setProperty("MAIN_SHORT_SHEET_RACE_NAMES", JSON.stringify(newRaces));
+        newRaces.sort(raceArrayItemSort), PropertiesService.getScriptProperties().setProperty("MAIN_SHORT_SHEET_RACE_NAMES", JSON.stringify(newRaces));
     }, getMainSheetProps = function(packagedResults) {
         var main_short_props = getShortMainSheetProps(), main_long_props = getLongMainSheetProps();
         if (packagedResults.fileName.toLowerCase().includes("short")) return main_short_props;
@@ -82,9 +84,14 @@ function test() {}
         if (tempFolderId) return tempFolderId;
         throw new Error("No Temp Folder Found");
     }, placePackagedResultsToTabs = function(packagedResults) {
-        var mainSheetProps = getMainSheetProps(packagedResults), mainSheet = SpreadsheetApp.openById(mainSheetProps.id), uploadedFileName = packagedResults.fileName, raceName = packagedResults.raceName;
-        if (mainSheetProps.raceNames.includes(raceName)) throw new Error("Race has already been added. Please remove it before adding it again.");
-        mainSheetProps.raceNames.push(raceName);
+        var mainSheetProps = getMainSheetProps(packagedResults), mainSheet = SpreadsheetApp.openById(mainSheetProps.id), uploadedFileName = packagedResults.fileName, raceName = packagedResults.raceName, raceDate = packagedResults.raceDate;
+        if (mainSheetProps.races.map((function(race) {
+            return race.raceName;
+        })).includes(raceName)) throw new Error("Race has already been added. Please remove it before adding it again.");
+        mainSheetProps.races.push({
+            raceName,
+            date: new Date(raceDate).getTime()
+        });
         for (var _i = 0, _a = Object.keys(packagedResults.seriesResults); _i < _a.length; _i++) {
             var seriesGroup = _a[_i], seriesSheet = mainSheet.getSheetByName(seriesGroup);
             if (!seriesSheet) throw new Error("Could not get series sheet tab in mainSheet: ".concat(mainSheet.getId(), " for series: ").concat(seriesGroup));
@@ -98,7 +105,7 @@ function test() {}
                 if (!packagedResults.fileName.toLowerCase().includes("long")) throw new Error("Could not determine main sheet to set new Race Names");
                 setLongMainSheetRaces(newRaces);
             }
-        }(packagedResults, mainSheetProps.raceNames);
+        }(packagedResults, mainSheetProps.races);
     }, getNextOpenRowInSeriesSheet = function(seriesSheet) {
         for (var sheetRange = seriesSheet.getRange(2, 1, seriesSheet.getMaxRows()).getValues(), i = 0; i < sheetRange.length; i++) if ("" == sheetRange[i][0].trim()) return i + 2;
         return -1;
@@ -119,35 +126,37 @@ function test() {}
             if (!mainSheet) throw new Error("Cannot open main sheet with id: ".concat(mainSheetProps.id));
             var mainResultsSheet = mainSheet.getSheetByName("Results");
             if (!mainResultsSheet) throw new Error('Cannot open "Results" sheet within sheet id: '.concat(mainSheetProps.id));
-            for (var recordsRangeValues = [ __spreadArray(__spreadArray([ "Age Group", "Name" ], mainSheetProps.raceNames, !0), [ "Total Points" ], !1) ], _i = 0, _a = Object.keys(mainReport); _i < _a.length; _i++) {
+            for (var recordsRangeValues = [ __spreadArray(__spreadArray([ "Age Group", "Name" ], mainSheetProps.races.map((function(race) {
+                return race.raceName;
+            })), !0), [ "Total Points" ], !1) ], _i = 0, _a = Object.keys(mainReport); _i < _a.length; _i++) {
                 for (var seriesGroup = _a[_i], seriesArray = [], _b = 0, _c = Object.keys(mainReport[seriesGroup]); _b < _c.length; _b++) {
                     var runner = _c[_b];
-                    if (mainSheetProps.raceNames.length >= minReqRaces) {
+                    if (mainSheetProps.races.length >= minReqRaces) {
                         if (!(mainReport[seriesGroup][runner].totalRaces >= minReqRaces)) continue;
-                        (runnerArray = new Array(mainSheetProps.raceNames.length + 3).fill(""))[0] = seriesGroup, 
+                        (runnerArray = new Array(mainSheetProps.races.length + 3).fill(""))[0] = seriesGroup, 
                         runnerArray[1] = mainReport[seriesGroup][runner].name, runnerArray[runnerArray.length - 1] = mainReport[seriesGroup][runner].totalPoints + "";
-                        for (var i = 0; i < mainSheetProps.raceNames.length; i++) mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] ? runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] + "" : runnerArray[i + 2] = "0";
+                        for (var i = 0; i < mainSheetProps.races.length; i++) mainReport[seriesGroup][runner].races[mainSheetProps.races[i].raceName] ? runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.races[i].raceName] + "" : runnerArray[i + 2] = "0";
                         seriesArray.push(runnerArray);
                     } else {
                         var runnerArray;
-                        for ((runnerArray = new Array(mainSheetProps.raceNames.length + 3).fill(""))[0] = seriesGroup, 
+                        for ((runnerArray = new Array(mainSheetProps.races.length + 3).fill(""))[0] = seriesGroup, 
                         runnerArray[1] = mainReport[seriesGroup][runner].name, runnerArray[runnerArray.length - 1] = mainReport[seriesGroup][runner].totalPoints + "", 
-                        i = 0; i < mainSheetProps.raceNames.length; i++) mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] ? runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.raceNames[i]] + "" : runnerArray[i + 2] = "0";
+                        i = 0; i < mainSheetProps.races.length; i++) mainReport[seriesGroup][runner].races[mainSheetProps.races[i].raceName] ? runnerArray[i + 2] = mainReport[seriesGroup][runner].races[mainSheetProps.races[i].raceName] + "" : runnerArray[i + 2] = "0";
                         seriesArray.push(runnerArray);
                     }
                 }
                 seriesArray.sort((function(a, b) {
-                    var totalIndex = mainSheetProps.raceNames.length + 2;
+                    var totalIndex = mainSheetProps.races.length + 2;
                     return parseInt(a[totalIndex]) < parseInt(b[totalIndex]) ? 1 : parseInt(a[totalIndex]) > parseInt(b[totalIndex]) ? -1 : 0;
                 }));
                 var numRunnersOverReportLimit = seriesArray.length - numReportedPerSeriesGroup;
                 if (numRunnersOverReportLimit > 0) for (i = 0; i < numRunnersOverReportLimit; i++) seriesArray.pop();
-                if (seriesArray.push(new Array(mainSheetProps.raceNames.length + 3).fill("")), seriesArray.length > 1) for (var _d = 0, seriesArray_1 = seriesArray; _d < seriesArray_1.length; _d++) {
+                if (seriesArray.push(new Array(mainSheetProps.races.length + 3).fill("")), seriesArray.length > 1) for (var _d = 0, seriesArray_1 = seriesArray; _d < seriesArray_1.length; _d++) {
                     var row = seriesArray_1[_d];
                     recordsRangeValues.push(row);
                 }
             }
-            mainResultsSheet.clear(), mainResultsSheet.getRange(1, 1, recordsRangeValues.length, mainSheetProps.raceNames.length + 3).setValues(recordsRangeValues);
+            mainResultsSheet.clear(), mainResultsSheet.getRange(1, 1, recordsRangeValues.length, mainSheetProps.races.length + 3).setValues(recordsRangeValues);
         }(mainSheetProps = "long" === raceType ? getLongMainSheetProps() : getShortMainSheetProps(), function(mainSheetId) {
             var mainSheet = SpreadsheetApp.openById(mainSheetId);
             if (!mainSheet) throw new Error("Cannot open main sheet with id: ".concat(mainSheetId));
@@ -194,7 +203,9 @@ function test() {}
         if (!formObject.raceType || "long" != formObject.raceType && "short" != formObject.raceType) throw new Error("Invalid race type selected.");
         if (!formObject.raceName) throw new Error("No race name given.");
         return function(mainSheetProps, raceName) {
-            if (!mainSheetProps.raceNames.includes(raceName)) throw new Error('Could not find race: "'.concat(raceName, '" to remove.'));
+            if (!mainSheetProps.races.map((function(race) {
+                return race.raceName;
+            })).includes(raceName)) throw new Error('Could not find race: "'.concat(raceName, '" to remove.'));
             for (var failedSheets = [], _i = 0, sheetTabs_1 = SpreadsheetApp.openById(mainSheetProps.id).getSheets(); _i < sheetTabs_1.length; _i++) {
                 var sheet = sheetTabs_1[_i];
                 try {
@@ -206,14 +217,19 @@ function test() {}
                 }
             }
             if (failedSheets.length > 0) throw new Error("Failed to remove race for seriesGroups: ".concat(failedSheets.join(", ")));
-            mainSheetProps.raceNames.splice(mainSheetProps.raceNames.indexOf(raceName), 1), 
-            "long" === mainSheetProps.raceType ? setLongMainSheetRaces(mainSheetProps.raceNames) : setShortMainSheetRaces(mainSheetProps.raceNames);
+            mainSheetProps.races.splice(mainSheetProps.races.map((function(race) {
+                return race.raceName;
+            })).indexOf(raceName), 1), "long" === mainSheetProps.raceType ? setLongMainSheetRaces(mainSheetProps.races) : setShortMainSheetRaces(mainSheetProps.races);
         }("long" === formObject.raceType ? getLongMainSheetProps() : getShortMainSheetProps(), formObject.raceName), 
         __webpack_require__.g.getRaceNames();
     }, __webpack_require__.g.getRaceNames = function() {
         return {
-            long: getLongMainSheetProps().raceNames,
-            short: getShortMainSheetProps().raceNames
+            long: getLongMainSheetProps().races.map((function(race) {
+                return race.raceName;
+            })),
+            short: getShortMainSheetProps().races.map((function(race) {
+                return race.raceName;
+            }))
         };
     }, __webpack_require__.g.uploadHandler = function(formObject) {
         var excelFileId, gSheetId, caughtError;
@@ -230,6 +246,7 @@ function test() {}
                 for (var uploadedSheet = SpreadsheetApp.openById(documentId), uploadedSheetRange = uploadedSheet.getActiveSheet(), rangeData = uploadedSheetRange.getRange(1, 1, uploadedSheetRange.getMaxRows(), 7).getValues(), packagedResults = {
                     fileName: uploadedSheet.getName(),
                     raceName: rangeData[1][0],
+                    raceDate: rangeData[3][0],
                     seriesResults: {}
                 }, i = 6; i < rangeData.length; i++) {
                     var row = rangeData[i], firstColOnRow = row[0];
