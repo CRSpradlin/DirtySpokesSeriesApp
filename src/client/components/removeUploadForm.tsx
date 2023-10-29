@@ -69,7 +69,7 @@ export default class RemoveUploadForm extends React.Component<ChildComponentType
 	public render() {
 		return (
 			<div className="content-center">
-				<span className="text-dirtyspokes-dark text-lg p-6">Select Race Type and Race Name to Remove</span>
+				<h1 className="text-dirtyspokes-dark text-2xl p-6">Select Race Type and Race Name to Remove</h1>
 				<form id="removeForm" onSubmit={this.handleSubmit}>
 					<div className="m-3">
 						<span className="text-dirtyspokes-dark">Race Type: </span>
@@ -86,7 +86,7 @@ export default class RemoveUploadForm extends React.Component<ChildComponentType
 							))}
 						</select>
 					</div>
-					<div className="m-3">
+					<div className="m-10">
 						<input type="submit" value={this.props.loading?"Removing...":"Submit"} disabled={this.props.loading} className={`w-[10rem] ${this.state.racesLoading || this.props.loading ? 'bg-dirtyspokes-dark' : ' bg-dirtyspokes-light hover:bg-dirtyspokes-dark'} px-5 py-2 text-sm rounded-full font-semibold text-white`}/>
 					</div>
 				</form>

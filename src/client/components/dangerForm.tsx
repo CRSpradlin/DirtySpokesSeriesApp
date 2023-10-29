@@ -33,9 +33,9 @@ export default class DangerForm extends React.Component<ChildComponentType> {
 	public render() {
 		return (
 			<div className="content-center">
-				<span className="text-red-700 text-lg p-6">Clear All Results and Data</span>
+				<h1 className="text-red-700 text-2xl p-6">Clear All Results and Data</h1>
 				<form id="deleteForm" onSubmit={this.handleSubmit}>
-					<div className="m-3">
+					<div className="m-10">
 						<input type="submit" value={this.props.loading?"Deleting...":"Delete"} disabled={this.props.loading} className={`w-[10rem] ${this.props.loading ? 'bg-red-700' : ' bg-red-500 hover:bg-red-700'} px-5 py-2 text-sm rounded-full font-semibold text-white`}/>
 					</div>
 				</form>
