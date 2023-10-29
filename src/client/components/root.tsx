@@ -53,7 +53,7 @@ export class Root extends React.Component {
 						</li>
 					</ul>
 				</div>
-				<div className="h-full mt-10 flex flex-col text-center">
+				<div className="h-full flex flex-col text-center">
 					{ this.state.activeTabName === 'fileUploadForm' ? <FileUploadForm loading={this.state.loading} setLoading={this.setLoading} /> : null }
 					{ this.state.activeTabName === 'removeUploadForm' ? <RemoveUploadForm loading={this.state.loading} setLoading={this.setLoading} /> : null }
 					{ this.state.activeTabName === 'generateForm' ? <GenerateForm loading={this.state.loading} setLoading={this.setLoading} /> : null }
