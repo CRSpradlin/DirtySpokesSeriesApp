@@ -1,9 +1,11 @@
 import React from "react";
 import { ChildComponentType } from "./root";
+import Modal from "./modal";
 
 export default class RemoveUploadForm extends React.Component<ChildComponentType> {
 
 	state = {
+		modalVisability: false,
 		racesLoading: true,
 		raceNames: {},
 		selectedRaceType: 'long',
@@ -13,6 +15,26 @@ export default class RemoveUploadForm extends React.Component<ChildComponentType
 	constructor(props) {
 		super(props);
 	};
+
+	public setModalVis = (newVis: boolean, runSubmit: boolean) => {
+		this.props.setLoading(true);
+		this.setState({ 
+			modalVisability: newVis,
+			raceLoading: true
+		 });
+		if (runSubmit) {
+			// @ts-ignore
+			google.script.run
+				.withSuccessHandler(this.successfullyRemovedRace)
+				.withFailureHandler(this.handleFailure)
+				.removeRaceHandler(document.getElementById("removeForm"));
+		} else {
+			this.props.setLoading(false);
+			this.setState({
+				raceLoading: false
+			 });
+		}
+	}
 
 	public handleFailure = (error) => {
 		alert('Error Occured: ' + error.message);
@@ -54,16 +76,7 @@ export default class RemoveUploadForm extends React.Component<ChildComponentType
 
 	public handleSubmit = (e) => {
 		e.preventDefault();
-		this.props.setLoading(true);
-		this.setState({
-			racesLoading: true
-		});
-
-		 // @ts-ignore
-		 google.script.run
-		 	.withSuccessHandler(this.successfullyRemovedRace)
-			.withFailureHandler(this.handleFailure)
-			.removeRaceHandler(document.getElementById("removeForm"));
+		this.setModalVis(true, false);
 	};
 
 	public render() {
@@ -90,6 +103,7 @@ export default class RemoveUploadForm extends React.Component<ChildComponentType
 						<input type="submit" value={this.props.loading?"Removing...":"Submit"} disabled={this.props.loading} className={`w-[10rem] ${this.state.racesLoading || this.props.loading ? 'bg-dirtyspokes-dark' : ' bg-dirtyspokes-light hover:bg-dirtyspokes-dark'} px-5 py-2 text-sm rounded-full font-semibold text-white`}/>
 					</div>
 				</form>
+				<Modal modalTitle={'Are you sure you want to remove the selected race?'} visability={ this.state.modalVisability } setVisability={ this.setModalVis } />
 			</div>
 		);
 	};
