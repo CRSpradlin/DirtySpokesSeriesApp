@@ -146,8 +146,8 @@ function test() {}
                     }
                 }
                 seriesArray.sort((function(a, b) {
-                    var totalIndex = mainSheetProps.races.length + 2;
-                    return parseInt(a[totalIndex]) < parseInt(b[totalIndex]) ? 1 : parseInt(a[totalIndex]) > parseInt(b[totalIndex]) ? -1 : 0;
+                    var totalIndex = mainSheetProps.races.length + 2, latestRaceIndex = mainSheetProps.races.length + 1;
+                    return parseInt(a[totalIndex]) < parseInt(b[totalIndex]) ? 1 : parseInt(a[totalIndex]) > parseInt(b[totalIndex]) ? -1 : parseInt(a[latestRaceIndex]) < parseInt(b[latestRaceIndex]) ? 1 : parseInt(a[latestRaceIndex]) > parseInt(b[latestRaceIndex]) ? -1 : 0;
                 }));
                 var numRunnersOverReportLimit = seriesArray.length - numReportedPerSeriesGroup;
                 if (numRunnersOverReportLimit > 0) for (i = 0; i < numRunnersOverReportLimit; i++) seriesArray.pop();
