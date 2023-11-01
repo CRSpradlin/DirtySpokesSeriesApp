@@ -347,9 +347,14 @@ const postMainReportToSheet = (mainSheetProps: MainSheetProps, mainReport: MainR
 
         seriesArray.sort((a, b) => {
             const totalIndex = mainSheetProps.races.length + 2;
+            const latestRaceIndex = mainSheetProps.races.length + 1;
             if (parseInt(a[totalIndex]) < parseInt(b[totalIndex])) return 1;
             else if (parseInt(a[totalIndex]) > parseInt(b[totalIndex])) return -1;
-            else return 0;
+            else {
+                if (parseInt(a[latestRaceIndex]) < parseInt(b[latestRaceIndex])) return 1;
+                else if (parseInt(a[latestRaceIndex]) > parseInt(b[latestRaceIndex])) return -1;
+                else return 0;
+            };
         });
 
         const numRunnersOverReportLimit = seriesArray.length - numReportedPerSeriesGroup; // Plus 1 for Series Group Names
