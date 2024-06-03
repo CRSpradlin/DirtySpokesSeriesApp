@@ -1,3 +1,8 @@
+# **ARCHIVED JUNE 2024:**
+## This project was archived and moved to leverage the new [gcp-react-template](https://github.com/CRSpradlin/gcp-react-template). Check out the new and improved [dirty-spokes-series-app repo](https://github.com/CRSpradlin/dirty-spokes-series-app)!
+
+---
+
 # DirtySpokesSeriesApp
 This app is the source code for a project dedicated to automating series winner determination of the North Georgia Dirty Spokes trail races. 
 
